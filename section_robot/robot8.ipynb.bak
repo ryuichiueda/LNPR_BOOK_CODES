@@ -119,7 +119,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "class Agent:\n",
+    "class StaticAgent:\n",
     "    def __init__(self, nu, omega):\n",
     "        self.nu = nu\n",
     "        self.omega = omega\n",
@@ -169,36 +169,6 @@
   {
    "cell_type": "code",
    "execution_count": 7,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "class Camera:                      ### fig:camera1\n",
-    "    def __init__(self, env_map):\n",
-    "        self.map = env_map\n",
-    "        \n",
-    "    def data(self, cam_pose):\n",
-    "        observed = []\n",
-    "        for lm in self.map.landmarks:\n",
-    "            p = self.relative_polar_pos(cam_pose, lm.pos)\n",
-    "            observed.append((p, lm.id))\n",
-    "            \n",
-    "        return observed   \n",
-    "        \n",
-    "    def relative_polar_pos(self, cam_pose, obj_pos):\n",
-    "        s = math.sin(cam_pose[2])\n",
-    "        c = math.cos(cam_pose[2])\n",
-    "        relative_pos = np.array([[c,  s],\n",
-    "                                 [-s, c]]).dot(obj_pos - cam_pose[0:2])\n",
-    "        \n",
-    "        distance = math.sqrt(relative_pos[0]**2 + relative_pos[1]**2)\n",
-    "        direction = math.atan2(relative_pos[1], relative_pos[0])\n",
-    "        \n",
-    "        return np.array([distance, direction]).T"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -1005,8 +975,8 @@
     "world.append(m)                # worldに地図を登録\n",
     "\n",
     "### ロボットを作る ###\n",
-    "straight = Agent(0.2, 0.0)    \n",
-    "circling = Agent(0.2, 10.0/180*math.pi)  \n",
+    "straight = StaticAgent(0.2, 0.0)    \n",
+    "circling = StaticAgent(0.2, 10.0/180*math.pi)  \n",
     "robot1 = Robot( np.array([ 2, 3, math.pi/6]).T,    straight )  \n",
     "robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, circling, \"red\")  \n",
     "robot3 = Robot( np.array([ 0, 0, 0]).T, color=\"blue\")   \n",
@@ -1016,25 +986,6 @@
     "\n",
     "### アニメーション実行 ###\n",
     "world.draw()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 9,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "[(array([ 4.12310563,  2.26829546]), 1), (array([ 2.23606798,  1.40612541]), 2), (array([ 6.40312424, -3.09517024]), 3)]\n"
-     ]
-    }
-   ],
-   "source": [
-    "cam = Camera(m)                ### fig:try_camera\n",
-    "p = cam.data(robot2.pose)\n",
-    "print(p)"
    ]
   },
   {

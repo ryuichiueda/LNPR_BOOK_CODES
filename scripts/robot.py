@@ -110,7 +110,7 @@ class Robot:
 # In[4]:
 
 
-class StaticAgent:
+class Agent:
     def __init__(self, nu, omega):
         self.nu = nu
         self.omega = omega
@@ -206,8 +206,8 @@ if __name__ == '__main__':      ###name_indent###（上5行くらい）
    world.append(m)          
 
    ### ロボットを作る ###
-   straight = StaticAgent(0.2, 0.0)    
-   circling = StaticAgent(0.2, 10.0/180*math.pi)  
+   straight = Agent(0.2, 0.0)    
+   circling = Agent(0.2, 10.0/180*math.pi)  
    robot1 = Robot( np.array([ 2, 3, math.pi/6]).T,    sensor=Camera(m), agent=straight )             # 引数にcameraを追加、整理
    robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, sensor=Camera(m), agent=circling, color="red")  # robot3は消しました
    world.append(robot1)

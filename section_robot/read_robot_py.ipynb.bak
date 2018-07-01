@@ -2,18 +2,16 @@
  "cells": [
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 1,
    "metadata": {},
    "outputs": [],
    "source": [
-    "import sys       ###read_robot_py###\n",
-    "sys.path.append('../scripts/')\n",
-    "from robot import *"
+    "from robot import * ###read_robot_py###"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [
     {
@@ -821,8 +819,8 @@
     "    world.append(m)          \n",
     "\n",
     "    ### ロボットを作る ###\n",
-    "    straight = Agent(0.2, 0.0)    \n",
-    "    circling = Agent(0.2, 10.0/180*math.pi)  \n",
+    "    straight = StaticAgent(0.2, 0.0)    \n",
+    "    circling = StaticAgent(0.2, 10.0/180*math.pi)  \n",
     "    robot1 = Robot( np.array([ 2, 3, math.pi/6]).T,    sensor=Camera(m), agent=straight )             # 引数にcameraを追加、整理\n",
     "    robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, sensor=Camera(m), agent=circling, color=\"red\")  # robot3は消しました\n",
     "    world.append(robot1)\n",
