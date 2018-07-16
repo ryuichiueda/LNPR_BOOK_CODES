@@ -42,6 +42,7 @@ class World:
                                      interval=int(self.__time_interval*1000), repeat=False)
 
         plt.show()
+       # self.ani.save('/tmp/animation.gif', writer='imagemagick', fps=4, dpi=400)
         
     def __one_step(self, i, elems, ax):
         while elems: elems.pop().remove()
