@@ -16,7 +16,7 @@ import numpy as np
 # In[2]:
 
 
-class World:
+class World:        ### fig:world_init_add_timespan (1-5行目)
     def __init__(self, time_span, time_interval):
         self.objects = []  
         self.__time_span = time_span                  # 追加
@@ -55,7 +55,7 @@ class World:
 # In[3]:
 
 
-class IdealRobot:
+class IdealRobot:            ### fig:robot_camera（1,2,7,25-26行目,46-50行目）
     def __init__(self, pose, agent=None, sensor=None, color="black"):    # 引数を追加
         self.pose = pose  
         self.r = 0.2  
@@ -154,13 +154,17 @@ class Map:
 # In[7]:
 
 
-class IdealCamera:
-    def __init__(self, env_map):
+class IdealCamera:                            ### fig:camera3
+    def __init__(self, env_map,                  distance_range=(0.5, 6.0),
+                 direction_range=(-math.pi/3, math.pi/3)):
         self.map = env_map
         self.lastdata = []
         
+        self.distance_range = distance_range
+        self.direction_range = direction_range
+        
     def visible(self, distance, direction):  # ランドマークが計測できる条件
-        return 0.5 <= distance <= 6.0 and math.fabs(direction) <= math.pi/3
+        return self.distance_range[0] <= distance <= self.distance_range[1]                 and self.direction_range[0] <= direction <= self.direction_range[1]
         
     def data(self, cam_pose):
         observed = []
@@ -195,24 +199,23 @@ class IdealCamera:
 # In[8]:
 
 
-if __name__ == '__main__':      ###name_indent###（上5行くらい）
-   world = World(30, 0.1) 
+world = World(30, 0.1) 
 
-   ### 地図を生成して3つランドマークを追加 ###
-   m = Map()                                  
-   m.append_landmark(Landmark(2,-2))
-   m.append_landmark(Landmark(-1,-3))
-   m.append_landmark(Landmark(3,3))
-   world.append(m)          
+### 地図を生成して3つランドマークを追加 ###
+m = Map()                                  
+m.append_landmark(Landmark(2,-2))
+m.append_landmark(Landmark(-1,-3))
+m.append_landmark(Landmark(3,3))
+world.append(m)          
 
-   ### ロボットを作る ###
-   straight = Agent(0.2, 0.0)    
-   circling = Agent(0.2, 10.0/180*math.pi)  
-   robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
-   robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
-   world.append(robot1)
-   world.append(robot2)
+### ロボットを作る ###
+straight = Agent(0.2, 0.0)    
+circling = Agent(0.2, 10.0/180*math.pi)  
+robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
+robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
+world.append(robot1)
+world.append(robot2)
 
-   ### アニメーション実行 ###
-   world.draw()
+### アニメーション実行 ###
+world.draw()
 
