@@ -163,18 +163,18 @@ class IdealCamera:                            ### fig:camera3
         self.distance_range = distance_range
         self.direction_range = direction_range
         
-    def visible(self, distance, direction):  # ランドマークが計測できる条件
-        return self.distance_range[0] <= distance <= self.distance_range[1]                 and self.direction_range[0] <= direction <= self.direction_range[1]
+    def visible(self, polarpos):  # ランドマークが計測できる条件
+        return self.distance_range[0] <= polarpos[0] <= self.distance_range[1]                 and self.direction_range[0] <= polarpos[1] <= self.direction_range[1]
         
     def data(self, cam_pose):
         observed = []
         for lm in self.map.landmarks:
             z = self.relative_polar_pos(cam_pose, lm.pos)
-            if self.visible(z[0], z[1]):       # 条件を追加
+            if self.visible(z):               # 条件を追加
                 observed.append((z, lm.id))   # インデント
             
         self.lastdata = observed 
-        return observed   
+        return observed
         
     def relative_polar_pos(self, cam_pose, obj_pos):
         s = math.sin(cam_pose[2])
