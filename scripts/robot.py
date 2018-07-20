@@ -40,7 +40,7 @@ class World:        ### fig:world_init_add_timespan (1-5行目)
         self.ani = anm.FuncAnimation(fig, self.__one_step, fargs=(elems, ax),
                                      frames=int(self.__time_span/self.__time_interval),
                                      interval=int(self.__time_interval*1000), repeat=False)
-
+      #  self.ani.save('/tmp/animation.gif', writer='imagemagick', fps=4, dpi=400)
         plt.show()
         
     def __one_step(self, i, elems, ax):
