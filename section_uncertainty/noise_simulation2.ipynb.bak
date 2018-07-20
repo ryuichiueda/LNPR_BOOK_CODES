@@ -18,7 +18,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "class Robot(IdealRobot):   ###spike_noise###\n",
+    "class RandomIdealRobot(IdealRobot):   ###spike_noise###\n",
     "\n",
     "    def __init__(self, pose, agent=None, sensor=None, color=\"black\", noise_prob=0.1, noise_stderr=math.pi/60):\n",
     "        super().__init__(pose, agent, sensor, color)\n",
@@ -843,7 +843,7 @@
     "\n",
     "for i in range(100):\n",
     "    circling = Agent(0.2, 10.0/180*math.pi)\n",
-    "    r = Robot( np.array([0, 0, 0]).T, sensor=None, agent=circling, color=\"gray\" )  #灰色を指定\n",
+    "    r = RandomIdealRobot( np.array([0, 0, 0]).T, sensor=None, agent=circling, color=\"gray\" )  #灰色を指定\n",
     "    world.append(r)\n",
     "    \n",
     "r = IdealRobot( np.array([0, 0, 0]).T, sensor=None, agent=circling, color=\"red\" )  #IdealRobotのオブジェクトを作って赤色を指定\n",

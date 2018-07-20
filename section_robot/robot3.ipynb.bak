@@ -53,7 +53,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "class Robot:                                        # fig:coo_trans_methods この行と7〜14行目だけ抜粋\n",
+    "class IdealRobot:                                        # fig:coo_trans_methods この行と7〜14行目だけ抜粋\n",
     "    def __init__(self, pose, color=\"black\"):        # fig:draw_robot_coodinate 1, 16, 24〜31行目だけ抜粋\n",
     "        self.pose = pose        # 引数から姿勢の初期値を設定\n",
     "        self.r = 0.2            # これは描画のためなので固定値\n",
@@ -106,8 +106,8 @@
     "world = World()            ### fig:execution_robot_class\n",
     "# world.draw()         # これは削除\n",
     "### 以下追加 ###\n",
-    "robot1 = Robot( np.array([2, 3, math.pi/6]).T )           # ロボットのインスタンス生成（色を省略）\n",
-    "robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, \"red\")  # ロボットのインスタンス生成（色を指定）\n",
+    "robot1 = IdealRobot( np.array([2, 3, math.pi/6]).T )           # ロボットのインスタンス生成（色を省略）\n",
+    "robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, \"red\")  # ロボットのインスタンス生成（色を指定）\n",
     "world.append(robot1)                                      # ロボットを登録 \n",
     "world.append(robot2)\n",
     "world.draw()"

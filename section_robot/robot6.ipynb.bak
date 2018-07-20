@@ -60,7 +60,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "class Robot:                         ### fig:rewrite_init_for_agent (1, 2, 6行目)\n",
+    "class IdealRobot:                         ### fig:rewrite_init_for_agent (1, 2, 6行目)\n",
     "    def __init__(self, pose, agent=None, color=\"black\"):  # agentという引数を追加\n",
     "        self.pose = pose \n",
     "        self.r = 0.2 \n",
@@ -124,7 +124,7 @@
     }
    ],
    "source": [
-    "r = Robot(0,0,0)                 ### fig:using_func_state_transition1\n",
+    "r = IdealRobot(0,0,0)                 ### fig:using_func_state_transition1\n",
     "### 原点から0.1[m/s]で1[s]直進 ### \n",
     "p = r.func_state_transition(0.1, 0.0, 1.0, np.array([0,0,0]).T)\n",
     "print(p) "
@@ -159,7 +159,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "class StaticAgent:                        ### fig:StaticAgent\n",
+    "class Agent:                        ### fig:Agent\n",
     "    def __init__(self, nu, omega):\n",
     "        self.nu = nu\n",
     "        self.omega = omega\n",
@@ -965,11 +965,11 @@
    ],
    "source": [
     "world = World()           ### fig:rewrite_robot_for_agent\n",
-    "straight = StaticAgent(0.2, 0.0)                # 0.2[m/s]で直進     \n",
-    "circling = StaticAgent(0.2, 10.0/180*math.pi)   # 0.2[m/s], 10[deg/s]（円を描く\n",
-    "robot1 = Robot( np.array([ 2, 3, math.pi/6]).T,    straight )  \n",
-    "robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, circling, \"red\")  \n",
-    "robot3 = Robot( np.array([ 0, 0, 0]).T, color=\"blue\")     # コントローラを与えないロボット\n",
+    "straight = Agent(0.2, 0.0)                # 0.2[m/s]で直進     \n",
+    "circling = Agent(0.2, 10.0/180*math.pi)   # 0.2[m/s], 10[deg/s]（円を描く\n",
+    "robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    straight )  \n",
+    "robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, circling, \"red\")  \n",
+    "robot3 = IdealRobot( np.array([ 0, 0, 0]).T, color=\"blue\")     # コントローラを与えないロボット\n",
     "world.append(robot1)\n",
     "world.append(robot2)\n",
     "world.append(robot3)\n",

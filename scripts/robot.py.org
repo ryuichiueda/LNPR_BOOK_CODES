@@ -42,6 +42,7 @@ class World:
                                      interval=int(self.__time_interval*1000), repeat=False)
 
         plt.show()
+       # self.ani.save('/tmp/animation.gif', writer='imagemagick', fps=4, dpi=400)
         
     def __one_step(self, i, elems, ax):
         while elems: elems.pop().remove()
@@ -55,7 +56,7 @@ class World:
 # In[3]:
 
 
-class IdealRobot:
+class Robot:
     def __init__(self, pose, agent=None, sensor=None, color="black"):    # 引数を追加
         self.pose = pose  
         self.r = 0.2  
@@ -154,7 +155,7 @@ class Map:
 # In[7]:
 
 
-class IdealCamera:
+class Camera:
     def __init__(self, env_map):
         self.map = env_map
         self.lastdata = []
@@ -208,8 +209,8 @@ if __name__ == '__main__':      ###name_indent###（上5行くらい）
    ### ロボットを作る ###
    straight = Agent(0.2, 0.0)    
    circling = Agent(0.2, 10.0/180*math.pi)  
-   robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
-   robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
+   robot1 = Robot( np.array([ 2, 3, math.pi/6]).T,    sensor=Camera(m), agent=straight )             # 引数にcameraを追加、整理
+   robot2 = Robot( np.array([-2, -1, math.pi/5*6]).T, sensor=Camera(m), agent=circling, color="red")  # robot3は消しました
    world.append(robot1)
    world.append(robot2)
 
