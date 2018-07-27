@@ -40,7 +40,7 @@ class World:        ### fig:world_init_add_timespan (1-5行目)
         self.ani = anm.FuncAnimation(fig, self.__one_step, fargs=(elems, ax),
                                      frames=int(self.__time_span/self.__time_interval),
                                      interval=int(self.__time_interval*1000), repeat=False)
-      #  self.ani.save('/tmp/animation.gif', writer='imagemagick', fps=4, dpi=400)
+
         plt.show()
         
     def __one_step(self, i, elems, ax):
@@ -164,6 +164,9 @@ class IdealCamera:                            ### fig:camera3
         self.direction_range = direction_range
         
     def visible(self, polarpos):  # ランドマークが計測できる条件
+        if polarpos is None:
+            return False
+        
         return self.distance_range[0] <= polarpos[0] <= self.distance_range[1]                 and self.direction_range[0] <= polarpos[1] <= self.direction_range[1]
         
     def data(self, cam_pose):
@@ -198,23 +201,25 @@ class IdealCamera:                            ### fig:camera3
 
 # In[8]:
 
-if __name__ == '__init__':
-	world = World(30, 0.1) 
-	
-	### 地図を生成して3つランドマークを追加 ###
-	m = Map()                                  
-	m.append_landmark(Landmark(2,-2))
-	m.append_landmark(Landmark(-1,-3))
-	m.append_landmark(Landmark(3,3))
-	world.append(m)          
-	
-	### ロボットを作る ###
-	straight = Agent(0.2, 0.0)    
-	circling = Agent(0.2, 10.0/180*math.pi)  
-	robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
-	robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
-	world.append(robot1)
-	world.append(robot2)
-	
-	### アニメーション実行 ###
-	world.draw()
+
+if __name__ == '__main__':
+    world = World(30, 0.1) 
+
+    ### 地図を生成して3つランドマークを追加 ###
+    m = Map()                                  
+    m.append_landmark(Landmark(2,-2))
+    m.append_landmark(Landmark(-1,-3))
+    m.append_landmark(Landmark(3,3))
+    world.append(m)          
+
+    ### ロボットを作る ###
+    straight = Agent(0.2, 0.0)    
+    circling = Agent(0.2, 10.0/180*math.pi)  
+    robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
+    robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
+    world.append(robot1)
+    world.append(robot2)
+
+    ### アニメーション実行 ###
+    world.draw()
+
