@@ -16,27 +16,27 @@ import numpy as np
 # In[2]:
 
 
-class World:        ### fig:world_init_add_timespan (1-5行目)
+class World:
     def __init__(self, time_span, time_interval):
         self.objects = []  
-        self.__time_span = time_span                  # 追加
-        self.__time_interval = time_interval          # 追加
+        self.__time_span = time_span  
+        self.__time_interval = time_interval 
         
-    def append(self,obj):             # オブジェクトを登録するための関数
+    def append(self,obj):  
         self.objects.append(obj)
     
-    def draw(self):            ### fig:world_draw_with_timesapn (1, 10, 21-26, 28-34行目)
-        fig = plt.figure(figsize=(4,4))                # 8x8 inchの図を準備
-        ax = fig.add_subplot(111)                      # サブプロットを準備
-        ax.set_aspect('equal')                         # 縦横比を座標の値と一致させる
-        ax.set_xlim(-5,5)                              # X軸を-5m x 5mの範囲で描画
-        ax.set_ylim(-5,5)                              # Y軸も同様に
-        ax.set_title("$\Sigma_{world}$",fontsize=10)   # 図のタイトルをTeXの形式で埋め込み
-        ax.set_xlabel("X",fontsize=10)                 # X軸にラベルを表示
-        ax.set_ylabel("Y",fontsize=10)                 # 同じくY軸に
+    def draw(self): 
+        fig = plt.figure(figsize=(4,4))    
+        ax = fig.add_subplot(111)          
+        ax.set_aspect('equal')             
+        ax.set_xlim(-5,5)                  
+        ax.set_ylim(-5,5)                  
+        ax.set_title("$\Sigma_{world}$",fontsize=10)   
+        ax.set_xlabel("X",fontsize=10)                 
+        ax.set_ylabel("Y",fontsize=10)                 
         
         elems = []
-        ### FuncAnimationのframes, intervalを変更 ###
+        
         self.ani = anm.FuncAnimation(fig, self.__one_step, fargs=(elems, ax),
                                      frames=int(self.__time_span/self.__time_interval),
                                      interval=int(self.__time_interval*1000), repeat=False)
@@ -45,17 +45,17 @@ class World:        ### fig:world_init_add_timespan (1-5行目)
         
     def __one_step(self, i, elems, ax):
         while elems: elems.pop().remove()
-        time_str = "t = %.2f[s]" % (self.__time_interval*i)    # 時刻として表示する文字列
+        time_str = "t = %.2f[s]" % (self.__time_interval*i)
         elems.append(ax.text(-4.4, 4.5, time_str, fontsize=10))
         for obj in self.objects:
             obj.draw(ax, elems)
-            obj.one_step(self.__time_interval)                 # 変更
+            obj.one_step(self.__time_interval)    
 
 
 # In[3]:
 
 
-class IdealRobot:            ### fig:robot_camera（1,2,7,25-26行目,46-50行目）
+class IdealRobot:   
     def __init__(self, pose, agent=None, sensor=None, color="black"):    # 引数を追加
         self.pose = pose  
         self.r = 0.2  
@@ -81,6 +81,8 @@ class IdealRobot:            ### fig:robot_camera（1,2,7,25-26行目,46-50行�
         elems.append(ax.add_patch(c))   # 上のpatches.Circleでロボットの胴体を示す円を作ってサブプロットへ登録
         if self.sensor:
             self.sensor.draw(ax, elems, self.pose)
+        if self.agent:                        ### call_agent_draw
+            self.agent.draw(ax, elems)
          
     def draw_coordinate_system(self, ax):   
         origin = self.pos_trans_to_world(np.array([0, 0]).T) # ロボット座標系の原点を世界座標系へ
@@ -104,7 +106,7 @@ class IdealRobot:            ### fig:robot_camera（1,2,7,25-26行目,46-50行�
         if not self.agent: return
         nu, omega = self.agent.decision()
         self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
-        if self.sensor: self.sensor.data(self.pose)        # 追加
+        if self.sensor: self.sensor.data(self.pose)   
 
 
 # In[4]:
@@ -117,6 +119,9 @@ class Agent:
         
     def decision(self):
         return self.nu, self.omega
+    
+    def draw(self, ax, elems):  #### agent_draw
+        pass
 
 
 # In[5]:
@@ -154,7 +159,7 @@ class Map:
 # In[7]:
 
 
-class IdealCamera:                            ### fig:camera3
+class IdealCamera:
     def __init__(self, env_map,                  distance_range=(0.5, 6.0),
                  direction_range=(-math.pi/3, math.pi/3)):
         self.map = env_map
