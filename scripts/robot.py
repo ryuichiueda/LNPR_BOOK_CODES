@@ -145,7 +145,7 @@ if __name__ == '__main__':
     ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
-    r = Robot( np.array([ 2, 2, math.pi/6]).T, sensor=Camera(m, oversight_prob=1.0), agent=circling) 
+    r = Robot( np.array([ 2, 2, math.pi/6]).T, sensor=Camera(m, oversight_prob=0.1), agent=circling) 
     world.append(r)
 
     ### アニメーション実行 ###

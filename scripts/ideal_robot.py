@@ -38,7 +38,7 @@ class World:
         elems = []
         
         self.ani = anm.FuncAnimation(fig, self.__one_step, fargs=(elems, ax),
-                                     frames=int(self.__time_span/self.__time_interval),
+                                     frames=int(self.__time_span/self.__time_interval)+1,
                                      interval=int(self.__time_interval*1000), repeat=False)
 
         plt.show()
