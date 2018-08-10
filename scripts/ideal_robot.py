@@ -76,8 +76,8 @@ class IdealRobot:
         x, y, theta = self.pose                   # 姿勢の変数を分解して3つの変数へ
         xn = x + self.r * math.cos(theta)         #  ロボットの鼻先のx座標 
         yn = y + self.r * math.sin(theta)         #  ロボットの鼻先のy座標 
-        elems += ax.plot([x,xn], [y,yn], color=self.color) # ロボットの向きを示す線分の描画
-        c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color) 
+        elems += ax.plot([x,xn], [y,yn], color=self.color, alpha=0.5) # ロボットの向きを示す線分の描画
+        c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color, alpha=0.5) 
         elems.append(ax.add_patch(c))   # 上のpatches.Circleでロボットの胴体を示す円を作ってサブプロットへ登録
         if self.sensor:
             self.sensor.draw(ax, elems, self.pose)
