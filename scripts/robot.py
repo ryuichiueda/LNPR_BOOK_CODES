@@ -7,7 +7,7 @@
 import sys                       
 sys.path.append('../scripts/')
 from ideal_robot import *
-from scipy.stats import uniform, norm
+from scipy.stats import expon, norm, uniform
 
 
 # In[2]:
@@ -15,46 +15,55 @@ from scipy.stats import uniform, norm
 
 class Robot(IdealRobot):
         
-    def __init__(self, pose, agent=None, sensor=None, color="black",
-                           noise_prob=0.1, noise_stderr=math.pi/60, bias_rates=(0.1,0.1),
-                           stuck_prob = 0.0, stuck_escape_prob = 1.0,
-                           kidnap_prob = 0.0, kidnap_range_x = (-5.0,5.0), kidnap_range_y = (-5.0,5.0)):
+    def __init__(self, pose, agent=None, sensor=None, color="black",                            noise_per_meter=5, noise_std=math.pi/60, bias_rate_stds=(0.1,0.1),                            expected_stuck_time=1e100, expected_escape_time = 1e-100,                           expected_kidnap_time=1e100, kidnap_range_x = (-5.0,5.0), kidnap_range_y = (-5.0,5.0)): #追加
         super().__init__(pose, agent, sensor, color)
-        self.noise_prob = noise_prob
-        self.noise_stderr = noise_stderr
-        self.bias_rate_nu = norm.rvs(loc=1.0, scale=bias_rates[0])
-        self.bias_rate_omega = norm.rvs(loc=1.0, scale=bias_rates[1]) 
+        self.noise_pdf = expon(scale=1.0/(1e-100 + noise_per_meter))
+        self.distance_until_noise = self.noise_pdf.rvs()
+        self.theta_noise = norm(scale=noise_std)
+        self.bias_rate_nu = norm.rvs(loc=1.0, scale=bias_rate_stds[0])
+        self.bias_rate_omega = norm.rvs(loc=1.0, scale=bias_rate_stds[1]) 
         
-        self.stuck_prob = stuck_prob
-        self.stuck_escape_prob = stuck_escape_prob
+        self.stuck_pdf = expon(scale=expected_stuck_time) 
+        self.escape_pdf = expon(scale=expected_escape_time)
         self.is_stuck = False
+        self.time_until_stuck = self.stuck_pdf.rvs()
+        self.time_until_escape = self.escape_pdf.rvs()
         
-        self.kidnap_prob = kidnap_prob
+        self.kidnap_pdf = expon(scale=expected_kidnap_time) 
+        self.time_until_kidnap = self.kidnap_pdf.rvs()
         rx, ry = kidnap_range_x, kidnap_range_y
         self.kidnap_dist = uniform(loc=(rx[0], ry[0], 0.0), scale=(rx[1]-rx[0], ry[1]-ry[0], 2*math.pi ))
         
-    def noise(self):
-        t_noise = 0.0
-        
-        if uniform.rvs() < self.noise_prob:   
-            t_noise = norm.rvs(scale=self.noise_stderr) 
-
-        return np.array([0.0, 0.0, t_noise])
+    def noise(self, pose, nu, time_interval): 
+        self.distance_until_noise -= nu*time_interval
+        if self.distance_until_noise <= 0.0:
+            self.distance_until_noise += self.noise_pdf.rvs()
+            pose[2] += self.theta_noise.rvs()
+            
+        return pose
         
     def bias(self, nu, omega): 
         return nu*self.bias_rate_nu, omega*self.bias_rate_omega
     
-    def stuck(self, nu, omega):
+    def stuck(self, nu, omega, time_interval):
         if self.is_stuck:
-            self.is_stuck = uniform.rvs() >= self.stuck_escape_prob
-        else:
-            self.is_stuck = uniform.rvs() < self.stuck_prob
+            self.time_until_escape -= time_interval
+            if self.time_until_escape <= 0.0:
+                self.time_until_escape += self.escape_pdf.rvs()
+                self.is_stuck = False
+        else:            
+            self.time_until_stuck -= time_interval
+            if self.time_until_stuck <= 0.0:
+                self.time_until_stuck += self.stuck_pdf.rvs()
+                self.is_stuck = True
 
         return nu*(not self.is_stuck), omega*(not self.is_stuck)
     
-    def kidnap(self, pose):
-        if uniform.rvs() < self.kidnap_prob: 
-            return self.kidnap_dist.rvs()
+    def kidnap(self, pose, time_interval):
+        self.time_until_kidnap -= time_interval
+        if self.time_until_kidnap <= 0.0:
+            self.time_until_kidnap += self.kidnap_pdf.rvs()
+            return np.array(self.kidnap_dist.rvs()).T
         else:
             return pose
             
@@ -62,9 +71,10 @@ class Robot(IdealRobot):
         if not self.agent: return
         nu, omega = self.agent.decision()
         nu, omega = self.bias(nu, omega)
-        nu, omega = self.stuck(nu, omega)
-        self.pose = self.func_state_transition(nu, omega, time_interval, self.pose) + self.noise()
-        self.pose = self.kidnap(self.pose) 
+        nu, omega = self.stuck(nu, omega, time_interval)
+        self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
+        self.pose = self.noise(self.pose, nu, time_interval)
+        self.pose = self.kidnap(self.pose, time_interval) 
         if self.sensor: self.sensor.data(self.pose)
 
 
@@ -83,7 +93,7 @@ class Camera(IdealCamera): ###camera_fifth###
         
         self.distance_noise_rate = distance_noise_rate
         self.direction_noise = direction_noise  
-        self.distance_bias_rate = norm.rvs(scale=distance_bias_rate_stddev)
+        self.distance_bias_rate_std = norm.rvs(scale=distance_bias_rate_stddev)
         self.direction_bias = norm.rvs(scale=direction_bias_stddev) 
         
         rx, ry = phantom_range_x, phantom_range_y
@@ -98,7 +108,7 @@ class Camera(IdealCamera): ###camera_fifth###
         return np.array([ell, phi]).T
     
     def bias(self, relpos): 
-        return relpos + np.array([relpos[0]*self.distance_bias_rate,
+        return relpos + np.array([relpos[0]*self.distance_bias_rate_std,
                                   self.direction_bias]).T
     
     def phantom(self, cam_pose, relpos):
