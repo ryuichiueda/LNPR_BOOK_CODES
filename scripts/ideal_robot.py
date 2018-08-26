@@ -76,8 +76,8 @@ class IdealRobot:
         x, y, theta = self.pose                   # 姿勢の変数を分解して3つの変数へ
         xn = x + self.r * math.cos(theta)         #  ロボットの鼻先のx座標 
         yn = y + self.r * math.sin(theta)         #  ロボットの鼻先のy座標 
-        elems += ax.plot([x,xn], [y,yn], color=self.color, alpha=0.5) # ロボットの向きを示す線分の描画
-        c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color, alpha=0.5) 
+        elems += ax.plot([x,xn], [y,yn], color=self.color) # ロボットの向きを示す線分の描画
+        c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color) 
         elems.append(ax.add_patch(c))   # 上のpatches.Circleでロボットの胴体を示す円を作ってサブプロットへ登録
         if self.sensor:
             self.sensor.draw(ax, elems, self.pose)
@@ -103,8 +103,9 @@ class IdealRobot:
                                      omega*time ] )
 
     def one_step(self, time_interval):
-        if not self.agent: return
-        nu, omega = self.agent.decision()
+        if not self.agent: return        
+        obs =self.sensor.data(self.pose) if self.sensor else None #追加
+        nu, omega = self.agent.decision(obs) #引数追加
         self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
         if self.sensor: self.sensor.data(self.pose)   
 
@@ -117,7 +118,7 @@ class Agent:
         self.nu = nu
         self.omega = omega
         
-    def decision(self):
+    def decision(self, observation=None):
         return self.nu, self.omega
     
     def draw(self, ax, elems):  #### agent_draw

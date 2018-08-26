@@ -34,8 +34,8 @@ class Robot(IdealRobot):
         rx, ry = kidnap_range_x, kidnap_range_y
         self.kidnap_dist = uniform(loc=(rx[0], ry[0], 0.0), scale=(rx[1]-rx[0], ry[1]-ry[0], 2*math.pi ))
         
-    def noise(self, pose, nu, time_interval): 
-        self.distance_until_noise -= nu*time_interval
+    def noise(self, pose, nu, omega, time_interval):
+        self.distance_until_noise -= nu*time_interval + self.r*omega*time_interval
         if self.distance_until_noise <= 0.0:
             self.distance_until_noise += self.noise_pdf.rvs()
             pose[2] += self.theta_noise.rvs()
@@ -69,13 +69,13 @@ class Robot(IdealRobot):
             
     def one_step(self, time_interval):
         if not self.agent: return
-        nu, omega = self.agent.decision()
+        obs =self.sensor.data(self.pose) if self.sensor else None
+        nu, omega = self.agent.decision(obs)
         nu, omega = self.bias(nu, omega)
         nu, omega = self.stuck(nu, omega, time_interval)
         self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
-        self.pose = self.noise(self.pose, nu, time_interval)
+        self.pose = self.noise(self.pose, nu, omega, time_interval)
         self.pose = self.kidnap(self.pose, time_interval) 
-        if self.sensor: self.sensor.data(self.pose)
 
 
 # In[3]:
