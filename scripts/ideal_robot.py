@@ -19,8 +19,8 @@ import numpy as np
 class World:
     def __init__(self, time_span, time_interval):
         self.objects = []  
-        self.__time_span = time_span  
-        self.__time_interval = time_interval 
+        self.time_span = time_span  
+        self.time_interval = time_interval 
         
     def append(self,obj):  
         self.objects.append(obj)
@@ -37,19 +37,19 @@ class World:
         
         elems = []
         
-        self.ani = anm.FuncAnimation(fig, self.__one_step, fargs=(elems, ax),
-                                     frames=int(self.__time_span/self.__time_interval)+1,
-                                     interval=int(self.__time_interval*1000), repeat=False)
+        self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
+                                     frames=int(self.time_span/self.time_interval)+1,
+                                     interval=int(self.time_interval*1000), repeat=False)
 
         plt.show()
         
-    def __one_step(self, i, elems, ax):
+    def one_step(self, i, elems, ax):
         while elems: elems.pop().remove()
-        time_str = "t = %.2f[s]" % (self.__time_interval*i)
+        time_str = "t = %.2f[s]" % (self.time_interval*i)
         elems.append(ax.text(-4.4, 4.5, time_str, fontsize=10))
         for obj in self.objects:
             obj.draw(ax, elems)
-            obj.one_step(self.__time_interval)    
+            obj.one_step(self.time_interval)    
 
 
 # In[3]:
@@ -91,7 +91,7 @@ class IdealRobot:
             ax.quiver(origin[0], origin[1], wv[0], wv[1],  # 矢印で単位ベクトルを描画
                 angles='xy', scale_units='xy', scale=1, color=self.color)
             
-    def func_state_transition(self, nu, omega, time, pose):
+    def state_transition(self, nu, omega, time, pose):
         t0 = pose[2]
         if math.fabs(omega) < 1e-10:
             return pose + np.array( [nu*math.cos(t0), 
@@ -106,7 +106,7 @@ class IdealRobot:
         if not self.agent: return        
         obs =self.sensor.data(self.pose) if self.sensor else None #追加
         nu, omega = self.agent.decision(obs) #引数追加
-        self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
+        self.pose = self.state_transition(nu, omega, time_interval, self.pose)
         if self.sensor: self.sensor.data(self.pose)   
 
 

@@ -73,7 +73,7 @@ class Robot(IdealRobot):
         nu, omega = self.agent.decision(obs)
         nu, omega = self.bias(nu, omega)
         nu, omega = self.stuck(nu, omega, time_interval)
-        self.pose = self.func_state_transition(nu, omega, time_interval, self.pose)
+        self.pose = self.state_transition(nu, omega, time_interval, self.pose)
         self.pose = self.noise(self.pose, nu, omega, time_interval)
         self.pose = self.kidnap(self.pose, time_interval) 
 
