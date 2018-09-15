@@ -72,16 +72,16 @@ class IdealRobot:
     def pos_trans_to_world(self,pos):
         return self.vec_trans_to_world(pos) + self.pose[0:2]
     
-    def draw(self, ax, elems):
-        x, y, theta = self.pose                   # 姿勢の変数を分解して3つの変数へ
-        xn = x + self.r * math.cos(theta)         #  ロボットの鼻先のx座標 
-        yn = y + self.r * math.sin(theta)         #  ロボットの鼻先のy座標 
-        elems += ax.plot([x,xn], [y,yn], color=self.color) # ロボットの向きを示す線分の描画
+    def draw(self, ax, elems):         ### call_agent_draw
+        x, y, theta = self.pose  
+        xn = x + self.r * math.cos(theta)  
+        yn = y + self.r * math.sin(theta)  
+        elems += ax.plot([x,xn], [y,yn], color=self.color)
         c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color) 
-        elems.append(ax.add_patch(c))   # 上のpatches.Circleでロボットの胴体を示す円を作ってサブプロットへ登録
+        elems.append(ax.add_patch(c))
         if self.sensor:
             self.sensor.draw(ax, elems, self.pose)
-        if self.agent:                        ### call_agent_draw
+        if self.agent:                               #以下2行追加   
             self.agent.draw(ax, elems)
          
     def draw_coordinate_system(self, ax):   
@@ -113,7 +113,7 @@ class IdealRobot:
 # In[4]:
 
 
-class Agent:
+class Agent:                                     #### agent_draw
     def __init__(self, nu, omega):
         self.nu = nu
         self.omega = omega
@@ -121,7 +121,7 @@ class Agent:
     def decision(self, observation=None):
         return self.nu, self.omega
     
-    def draw(self, ax, elems):  #### agent_draw
+    def draw(self, ax, elems):   #このメソッドを追加
         pass
 
 
@@ -147,7 +147,7 @@ class Map:
         self.landmarks = []
         
     def append_landmark(self, landmark):       # ランドマークを追加
-        landmark.id = len(self.landmarks) + 1  # 追加するランドマークにIDを与える
+        landmark.id = len(self.landmarks)           # 追加するランドマークにIDを与える
         self.landmarks.append(landmark)
 
     def draw(self, ax, elems):                 # 描画（Landmarkのdrawを順に呼び出し）
@@ -208,7 +208,7 @@ class IdealCamera:
 # In[8]:
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':   ###name_indent
     world = World(30, 0.1) 
 
     ### 地図を生成して3つランドマークを追加 ###
