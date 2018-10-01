@@ -49,7 +49,7 @@ class World:
         elems.append(ax.text(-4.4, 4.5, time_str, fontsize=10))
         for obj in self.objects:
             obj.draw(ax, elems)
-            obj.one_step(self.time_interval)    
+            if hasattr(obj, "one_step"): obj.one_step(self.time_interval)    
 
 
 # In[3]:
@@ -152,9 +152,6 @@ class Map:
 
     def draw(self, ax, elems):                 # 描画（Landmarkのdrawを順に呼び出し）
         for lm in self.landmarks: lm.draw(ax, elems)
-
-    def one_step(self, time_interval):         # ランドマークは動かないので何もしない
-        pass
 
 
 # In[7]:
