@@ -4,7 +4,7 @@
 # In[1]:
 
 
-import sys ###randomheader
+import sys 
 sys.path.append('../scripts/')
 from robot import *
 from scipy.stats import multivariate_normal
@@ -65,25 +65,31 @@ class Particle:
 # In[3]:
 
 
-class Mcl:  ###addresampling (16〜31行目)
+class Mcl:  ###mlparticle（12〜16行目）
     def __init__(self, envmap, init_pose, num, motion_noise_stds,                  distance_dev_rate=0.14, direction_dev=0.05):    #2行目でenvmapを追加、3行目で標準偏差を追加
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
         self.map = envmap  #以下3行追加
         self.distance_dev_rate = distance_dev_rate
         self.direction_dev = direction_dev
+        self.ml_pose = self.particles[0].pose
 
         v = motion_noise_stds
         c = np.diag([v["nn"]**2, v["no"]**2, v["on"]**2, v["oo"]**2])
         self.motion_noise_rate_pdf = multivariate_normal(cov=c)
         
-    def motion_update(self, nu, omega, time):
+    def set_ml_pose(self): #追加
+        i = np.argmax([p.weight for p in self.particles])
+        self.ml_pose = self.particles[i].pose
+        
+    def motion_update(self, nu, omega, time): ###addsetmlpose
         for p in self.particles: p.motion_update(nu, omega, time, self.motion_noise_rate_pdf)
             
-    def observation_update(self, observation): #18行目で引数を追加
+    def observation_update(self, observation): #set_ml_poseをリサンプリング前に実行
         for p in self.particles: p.observation_update(observation, self.map,                                                       self.distance_dev_rate, self.direction_dev) 
-        self.resampling() #追加
+        self.set_ml_pose()
+        self.resampling() 
             
-    def resampling(self): #追加
+    def resampling(self): 
         ws = [e.weight for e in self.particles]    # 重みのリストを作る
         
         #重みの和がゼロに丸め込まれるとサンプリングできなくなるので小さな数を足しておく
@@ -95,7 +101,7 @@ class Mcl:  ###addresampling (16〜31行目)
         # 選んだリストからパーティクルを取り出し、重みを均一に
         self.particles = [Particle(e.pose,1.0/len(self.particles)) for e in ps]          
         
-    def draw(self, ax, elems):         #次のように変更
+    def draw(self, ax, elems):  
         xs = [p.pose[0] for p in self.particles]
         ys = [p.pose[1] for p in self.particles]
         vxs = [math.cos(p.pose[2])*p.weight*len(self.particles) for p in self.particles] #重みを要素に反映
@@ -117,8 +123,11 @@ class MclAgent(Agent):
         self.mcl.observation_update(observation)
         return self.nu, self.omega
         
-    def draw(self, ax, elems):
+    def draw(self, ax, elems):###mlwrite
         self.mcl.draw(ax, elems)
+        x, y, t = self.mcl.ml_pose #以下追加
+        s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
+        elems.append(ax.text(x, y+0.1, s, fontsize=8))
 
 
 # In[5]:
