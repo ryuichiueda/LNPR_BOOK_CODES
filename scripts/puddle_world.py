@@ -13,8 +13,8 @@ from mcl import *
 # In[2]:
 
 
-class Goal:  ###goal4
-    def __init__(self, x, y, radius=0.1, value=0.0):
+class Goal:  
+    def __init__(self, x, y, radius=0.3, value=0.0):
         self.pos = np.array([x, y]).T
         self.radius = radius
         self.value = value
@@ -51,7 +51,7 @@ class Puddle:
 # In[4]:
 
 
-class PuddleWorld(World): ###puddleworld4
+class PuddleWorld(World):
     def __init__(self, time_span, time_interval):
         super().__init__(time_span, time_interval)
         self.puddles = []
@@ -80,7 +80,7 @@ class PuddleWorld(World): ###puddleworld4
 # In[5]:
 
 
-class PuddleRobot(Robot): ###puddlerobot4
+class PuddleRobot(Robot):
     def __init__(self, time_interval, pose, agent=None, sensor=None, color="black",                            noise_per_meter=5, noise_std=math.pi/60, bias_rate_stds=(0.1,0.1),                            expected_stuck_time=1e100, expected_escape_time = 1e-100,                           expected_kidnap_time=1e100, kidnap_range_x = (-5.0,5.0), kidnap_range_y = (-5.0,5.0),                            puddle_coef=10.0): 
         super().__init__(pose, agent, sensor, color, noise_per_meter, noise_std, bias_rate_stds,                          expected_stuck_time, expected_escape_time, expected_kidnap_time, kidnap_range_x, kidnap_range_y)
         
@@ -89,41 +89,38 @@ class PuddleRobot(Robot): ###puddlerobot4
         self.total_reward = 0.0  
         self.time_interval = time_interval
         
-        self.in_goal = False #以下3行追加
+        self.in_goal = False
         self.final_value = 0.0
-        self.evaluation = 0.0
         
     def reward_per_sec(self):
-        if self.in_goal: return 0.0 #追加
         return -1.0 - self.puddle_depth*self.puddle_coef
     
     def one_step(self, time_interval):
+        if self.in_goal: #if文追加
+            return
+            
         super().one_step(time_interval)
         rps = self.reward_per_sec()
         self.total_reward += rps*self.time_interval
-        if self.in_goal: #if文追加
-            self.evaluation = self.total_reward + self.final_value
-        else:
-            self.evaluation = self.total_reward
         
     def draw(self, ax, elems): 
         super().draw(ax, elems)
         elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-0.5, "reward/sec:" + str(self.reward_per_sec()), fontsize=8))
-        elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-1.0, "evaluation:" + str(self.evaluation), fontsize=8)) #変更
+        elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-1.0, "evaluation:" + str(self.total_reward+self.final_value), fontsize=8)) #変更
 
 
 # In[6]:
 
 
-class PuddleIgnoreAgent(MclAgent):  ###puddleignoreagent
+class PuddleIgnoreAgent(MclAgent):  ###mclagent5 (policy以下)
     def __init__(self, time_interval, particle_pose, envmap, goal, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #goal追加
         super().__init__(time_interval, 0.0, 0.0, particle_pose, envmap, particle_num, motion_noise_stds)
         
         self.goal = goal
         
-    def decision(self, observation=None):
-        x, y, theta = self.mcl.ml_pose
-        dx, dy = self.goal.pos[0] - x, self.goal.pos[1] - y
+    def policy(self, pose, goal):
+        x, y, theta = pose
+        dx, dy = goal.pos[0] - x, goal.pos[1] - y
         distance = math.sqrt(dx**2+ dy**2)                                   #ゴールまでの距離
         direction = int((math.atan2(dy, dx) - theta)*180/math.pi)   #ゴールの方角（degreeに直す）
         direction = (direction + 360*1000 + 180)%360 - 180      #方角を-180〜180[deg]に正規化
@@ -132,8 +129,12 @@ class PuddleIgnoreAgent(MclAgent):  ###puddleignoreagent
         elif direction < -10:  nu, omega = 0.0, -0.5
         elif distance > 0.1:   nu, omega = 0.2, 0.0
         else:                       nu, omega = 0.0, 0.0
+            
+        return nu, omega
         
-        ###MCLの実行###
+    def decision(self, observation=None):
+        nu, omega = self.policy(self.mcl.ml_pose, self.goal)
+        
         self.mcl.motion_update(nu, omega, self.time_interval)
         self.mcl.observation_update(observation)
         
