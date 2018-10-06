@@ -19,22 +19,11 @@ class Particle:
         self.pose = init_pose
         self.weight = weight
         
-    def state_transition(self, nu, omega, time, pose): 
-        t0 = pose[2]
-        if abs(omega) < 1e-10:
-            return pose + np.array( [nu*math.cos(t0), 
-                                     nu*math.sin(t0),
-                                     omega ] ) * time
-        else:
-            return pose + np.array( [nu/omega*(math.sin(t0 + omega*time) - math.sin(t0)), 
-                                     nu/omega*(-math.cos(t0 + omega*time) + math.cos(t0)),
-                                     omega*time ] )
-        
     def motion_update(self, nu, omega, time, noise_rate_pdf): 
         ns = noise_rate_pdf.rvs()
         pnu = nu + ns[0]*math.sqrt(abs(nu)/time) + ns[1]*math.sqrt(abs(omega)/time)
         pomega = omega + ns[2]*math.sqrt(abs(nu)/time) + ns[3]*math.sqrt(abs(omega)/time)
-        self.pose = self.state_transition(pnu, pomega, time, self.pose)
+        self.pose = IdealRobot.state_transition(pnu, pomega, time, self.pose)
         
     def observation_update(self, observation, envmap, distance_dev_rate, direction_dev):  #変更
         for d in observation:
@@ -43,23 +32,12 @@ class Particle:
             
             ###パーティクルの位置と地図からランドマークの距離と方角を算出###
             pos_on_map = envmap.landmarks[obs_id].pos
-            particle_suggest_pos = self.relative_polar_pos(self.pose, pos_on_map)
+            particle_suggest_pos = IdealCamera.relative_polar_pos(self.pose, pos_on_map)
             
             ###尤度の計算###
             distance_dev = distance_dev_rate*particle_suggest_pos[0]
             cov = np.diag(np.array([distance_dev**2, direction_dev**2]))
             self.weight *= multivariate_normal(mean=particle_suggest_pos, cov=cov).pdf(obs_pos)
-
-    def relative_polar_pos(self, cam_pose, obj_pos): #IdealCameraからコピーしてくる
-        s = math.sin(cam_pose[2])
-        c = math.cos(cam_pose[2])
-        relative_pos = np.array([[c,  s],
-                                                   [-s, c]]).dot(obj_pos - cam_pose[0:2])
-        
-        distance = math.sqrt(relative_pos[0]**2 + relative_pos[1]**2)
-        direction = math.atan2(relative_pos[1], relative_pos[0])
-        
-        return np.array([distance, direction]).T
 
 
 # In[3]:

@@ -118,7 +118,8 @@ class PuddleIgnoreAgent(MclAgent):  ###mclagent5 (policy以下)
         
         self.goal = goal
         
-    def policy(self, pose, goal):
+    @classmethod
+    def policy(cls, pose, goal):
         x, y, theta = pose
         dx, dy = goal.pos[0] - x, goal.pos[1] - y
         distance = math.sqrt(dx**2+ dy**2)                                   #ゴールまでの距離

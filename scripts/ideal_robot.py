@@ -26,7 +26,7 @@ class World:
         self.objects.append(obj)
     
     def draw(self): 
-        fig = plt.figure(figsize=(4,4))    
+        fig = plt.figure(figsize=(4,4))
         ax = fig.add_subplot(111)          
         ax.set_aspect('equal')             
         ax.set_xlim(-5,5)                  
@@ -57,7 +57,7 @@ class World:
 
 class IdealRobot:   
     def __init__(self, pose, agent=None, sensor=None, color="black"):    # 引数を追加
-        self.pose = pose  
+        self.pose = pose
         self.r = 0.2  
         self.color = color 
         self.agent = agent
@@ -91,7 +91,8 @@ class IdealRobot:
             ax.quiver(origin[0], origin[1], wv[0], wv[1],  # 矢印で単位ベクトルを描画
                 angles='xy', scale_units='xy', scale=1, color=self.color)
             
-    def state_transition(self, nu, omega, time, pose):
+    @classmethod           
+    def state_transition(cls, nu, omega, time, pose):
         t0 = pose[2]
         if math.fabs(omega) < 1e-10:
             return pose + np.array( [nu*math.cos(t0), 
@@ -181,8 +182,9 @@ class IdealCamera:
             
         self.lastdata = observed 
         return observed
-        
-    def relative_polar_pos(self, cam_pose, obj_pos):
+    
+    @classmethod
+    def relative_polar_pos(cls, cam_pose, obj_pos):
         s = math.sin(cam_pose[2])
         c = math.cos(cam_pose[2])
         relative_pos = np.array([[c,  s],
