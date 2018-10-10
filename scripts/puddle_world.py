@@ -92,6 +92,8 @@ class PuddleRobot(Robot): ###puddlerobot4
         self.in_goal = False #以下2行追加
         self.final_value = 0.0
         
+        self.poses = [pose] #追加。描画用
+        
     def reward_per_sec(self):
         return -1.0 - self.puddle_depth*self.puddle_coef
     
@@ -106,7 +108,10 @@ class PuddleRobot(Robot): ###puddlerobot4
     def draw(self, ax, elems): 
         super().draw(ax, elems)
         elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-0.5, "reward/sec:" + str(self.reward_per_sec()), fontsize=8))
-        elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-1.0, "evaluation:" + str(self.total_reward+self.final_value), fontsize=8)) #変更
+        elems.append(ax.text(self.pose[0]+1.0, self.pose[1]-1.0, "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8)) #変更
+        
+        self.poses.append(self.pose) #以下追加。軌跡の描画
+        elems += ax.plot([e[0] for e in self.poses], [e[1] for e in self.poses], linewidth=0.5, color="black")
 
 
 # In[6]:
