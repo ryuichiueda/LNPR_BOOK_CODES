@@ -43,28 +43,29 @@ class Particle:
 # In[3]:
 
 
-class Mcl:  ###mlparticle（12〜16行目）
-    def __init__(self, envmap, init_pose, num, motion_noise_stds,                  distance_dev_rate=0.14, direction_dev=0.05):    #2行目でenvmapを追加、3行目で標準偏差を追加
+class Mcl:  ###mlparticle（13〜17行目）
+    def __init__(self, envmap, init_pose, num, motion_noise_stds,                  distance_dev_rate=0.14, direction_dev=0.05):
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
-        self.map = envmap  #以下3行追加
+        self.map = envmap
         self.distance_dev_rate = distance_dev_rate
         self.direction_dev = direction_dev
-        self.ml_pose = self.particles[0].pose
 
         v = motion_noise_stds
         c = np.diag([v["nn"]**2, v["no"]**2, v["on"]**2, v["oo"]**2])
         self.motion_noise_rate_pdf = multivariate_normal(cov=c)
         
+        self.ml_pose = self.particles[0].pose #追加
+        
     def set_ml_pose(self): #追加
         i = np.argmax([p.weight for p in self.particles])
         self.ml_pose = self.particles[i].pose
         
-    def motion_update(self, nu, omega, time): ###addsetmlpose
+    def motion_update(self, nu, omega, time): 
         for p in self.particles: p.motion_update(nu, omega, time, self.motion_noise_rate_pdf)
             
-    def observation_update(self, observation): #set_ml_poseをリサンプリング前に実行
+    def observation_update(self, observation):  ###setmlpose
         for p in self.particles: p.observation_update(observation, self.map,                                                       self.distance_dev_rate, self.direction_dev) 
-        self.set_ml_pose()
+        self.set_ml_pose() #リサンプリング前に実行
         self.resampling() 
             
     def resampling(self): 
@@ -96,8 +97,12 @@ class MclAgent(Agent):
         self.mcl = Mcl(envmap, particle_pose, particle_num, motion_noise_stds) #envmapを追加
         self.time_interval = time_interval
         
-    def decision(self, observation=None):
-        self.mcl.motion_update(self.nu, self.omega, self.time_interval)
+        self.prev_nu = 0.0
+        self.prev_omega = 0.0
+        
+    def decision(self, observation=None): 
+        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.prev_nu, self.prev_omega = self.nu, self.omega
         self.mcl.observation_update(observation)
         return self.nu, self.omega
         
@@ -123,7 +128,7 @@ if __name__ == '__main__':
     world.append(m)          
 
     ### ロボットを作る ###
-    circling = MclAgent(time_interval, 0.2, -10.0/180*math.pi, np.array([0, 0, 0]).T, m, particle_num=100) #地図を引数で渡す
+    circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, np.array([0, 0, 0]).T, m, particle_num=100) #地図を引数で渡す
     r = Robot(np.array([0,0,0]).T, sensor=Camera(m), agent=circling, color="red")
     world.append(r)
 

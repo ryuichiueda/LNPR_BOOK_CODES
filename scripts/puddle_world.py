@@ -71,10 +71,13 @@ class PuddleWorld(World): ###puddleworld4
         super().one_step(i, elems, ax)
         for r in self.robots:
             r.puddle_depth = self.puddle_depth(r.pose)
+            if hasattr(r.agent, 'puddle_depth'): r.agent.puddle_depth = r.puddle_depth
             for g in self.goals: #以下追加
                 if g.inside(r.pose):
                     r.in_goal = True
                     r.final_value = g.value
+                    if hasattr(r.agent, 'in_goal'): r.agent.in_goal = r.in_goal                  #以下、強化学習用
+                    if hasattr(r.agent, 'final_value'): r.agent.final_value = r.final_value
 
 
 # In[5]:
@@ -137,10 +140,11 @@ class PuddleIgnoreAgent(MclAgent):  ###puddleignoreagent
         return nu, omega
         
     def decision(self, observation=None):
-        nu, omega = self.policy(self.mcl.ml_pose, self.goal)
-        self.mcl.motion_update(nu, omega, self.time_interval)
+        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
         self.mcl.observation_update(observation)
         
+        nu, omega = self.policy(self.mcl.ml_pose, self.goal)
+        self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
 
 
