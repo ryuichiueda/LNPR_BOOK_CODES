@@ -7,7 +7,7 @@
 import sys 
 sys.path.append('../scripts/')
 from robot import *
-from mcl import *
+from kf import *
 
 
 # In[2]:
@@ -120,9 +120,9 @@ class PuddleRobot(Robot): ###puddlerobot4
 # In[6]:
 
 
-class PuddleIgnoreAgent(MclAgent):  ###puddleignoreagent
-    def __init__(self, time_interval, particle_pose, envmap, goal, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #goal追加, 速度, 角速度の初期値は不要
-        super().__init__(time_interval, 0.0, 0.0, particle_pose, envmap, particle_num, motion_noise_stds) #速度, 角速度の初期値をゼロに
+class PuddleIgnoreAgent(KfAgent):  ###puddleignoreagent
+    def __init__(self, time_interval, init_pose, envmap, goal, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}):
+        super().__init__(time_interval, 0.0, 0.0, init_pose, envmap, motion_noise_stds)
         
         self.goal = goal
         
@@ -133,17 +133,17 @@ class PuddleIgnoreAgent(MclAgent):  ###puddleignoreagent
         direction = int((math.atan2(dy, dx) - theta)*180/math.pi)   #ゴールの方角（degreeに直す）
         direction = (direction + 360*1000 + 180)%360 - 180      #方角を-180〜180[deg]に正規化（適当。ロボットが-1000回転すると破綻）
         
-        if direction > 10:      nu, omega = 0.0, 0.5
-        elif direction < -10:  nu, omega = 0.0, -0.5
-        else:                       nu, omega = 0.2, 0.0
+        if direction > 10:      nu, omega = 0.0, 2.0
+        elif direction < -10:  nu, omega = 0.0, -2.0
+        else:                       nu, omega = 1.0, 0.0
             
         return nu, omega
         
     def decision(self, observation=None):
-        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
-        self.mcl.observation_update(observation)
+        self.kf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.kf.observation_update(observation)
         
-        nu, omega = self.policy(self.mcl.ml_pose, self.goal)
+        nu, omega = self.policy(self.kf.belief.mean, self.goal)
         self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
 
@@ -158,7 +158,7 @@ if __name__ == '__main__': ###changetopuddlerobot4
     m = Map()
     m.append_landmark(Landmark(-4,2))
     m.append_landmark(Landmark(2,-3))
-    m.append_landmark(Landmark(3,3))
+    m.append_landmark(Landmark(4,4))
     m.append_landmark(Landmark(-4,-4)) #追加（ゴール方向にランドマークがないので）
     world.append(m)
     
@@ -171,11 +171,13 @@ if __name__ == '__main__': ###changetopuddlerobot4
     world.append(Puddle((-0.5, -2), (2.5, 1), 0.1))
 
     ### ロボットを作る ###
-    pia = PuddleIgnoreAgent(time_interval, np.array([0, 0, 0]).T, m, goal, particle_num=100)  #引数から速度、角速度を抜き、goalを追加
-    r = PuddleRobot(time_interval, np.array([0,0,0]).T, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0),
+    pose = np.array([3, 3, 0]).T
+    pia = PuddleIgnoreAgent(time_interval, pose, m, goal)  #引数から速度、角速度を抜き、goalを追加
+    r = PuddleRobot(time_interval, pose, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0),
               agent=pia, color="red", bias_rate_stds=(0,0)) #ロボットを変更
 
     world.append(r)
     
     world.draw()
+    #r.one_step(0.1)
 

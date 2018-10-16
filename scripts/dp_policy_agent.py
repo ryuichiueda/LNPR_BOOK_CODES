@@ -14,9 +14,9 @@ import collections
 # In[2]:
 
 
-class DpPolicyAgent(MclAgent):  ###dppolicyagent
-    def __init__(self, time_interval, particle_pose, envmap, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
-        super().__init__(time_interval, 0.0, 0.0, particle_pose, envmap, particle_num, motion_noise_stds) 
+class DpPolicyAgent(KfAgent):  ###dppolicyagent
+    def __init__(self, time_interval, init_pose, envmap,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
+        super().__init__(time_interval, 0.0, 0.0, init_pose, envmap, motion_noise_stds) 
         
         ###座標関連の変数をDynamicProgrammingから持ってくる###
         self.pose_min = np.r_[lowerleft, 0]  
@@ -45,10 +45,11 @@ class DpPolicyAgent(MclAgent):  ###dppolicyagent
         return self.policy_data[tuple(index)] #ベクトルのままだとインデックスに使えないのでタプルに
         
     def decision(self, observation=None):
-        nu, omega = self.policy(self.mcl.ml_pose)
-        self.mcl.motion_update(nu, omega, self.time_interval)
-        self.mcl.observation_update(observation)
+        self.kf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.kf.observation_update(observation)
         
+        nu, omega = self.policy(self.kf.belief.mean)
+        self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
 
 
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     for p in [[-3, 3, 0], [0.5, 1.5, 0], [3, 3, 0], [1, -1, 0]]:
         init_pose = np.array(p).T
     
-        dpa = DpPolicyAgent(time_interval, init_pose, m)  
+        dpa = DpPolicyAgent(time_interval, init_pose, m)
         r = PuddleRobot(time_interval, init_pose, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0),
               agent=dpa, color="red", bias_rate_stds=(0,0))
 
