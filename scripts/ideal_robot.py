@@ -61,6 +61,7 @@ class IdealRobot:
         self.r = 0.2  
         self.color = color 
         self.agent = agent
+        self.poses = []
         self.sensor = sensor    # 追加
         
     def vec_trans_to_world(self,vec):
@@ -79,6 +80,8 @@ class IdealRobot:
         elems += ax.plot([x,xn], [y,yn], color=self.color)
         c = patches.Circle(xy=(x, y), radius=self.r, fill=False, color=self.color) 
         elems.append(ax.add_patch(c))
+        self.poses.append(self.pose)
+        elems += ax.plot([e[0] for e in self.poses], [e[1] for e in self.poses], linewidth=0.5, color="black")
         if self.sensor:
             self.sensor.draw(ax, elems, self.pose)
         if self.agent:                               #以下2行追加   
