@@ -30,8 +30,7 @@ class World:
         ax = fig.add_subplot(111)          
         ax.set_aspect('equal')             
         ax.set_xlim(-5,5)                  
-        ax.set_ylim(-5,5)                  
-        ax.set_title("$\Sigma_{world}$",fontsize=10)   
+        ax.set_ylim(-5,5) 
         ax.set_xlabel("X",fontsize=10)                 
         ax.set_ylabel("Y",fontsize=10)                 
         
