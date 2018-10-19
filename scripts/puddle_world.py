@@ -81,8 +81,8 @@ class PuddleWorld(World):
 
 
 class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
-    def __init__(self, time_interval, nu, omega, init_pose, envmap, goal, puddle_coef=100,                  motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #goal追加
-        super().__init__(time_interval, nu, omega, init_pose, envmap, motion_noise_stds)
+    def __init__(self, time_interval, init_pose, envmap, goal, puddle_coef=100,                  motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #nu, omegaを除去。goal追加
+        super().__init__(time_interval, 0.0, 0.0, init_pose, envmap, motion_noise_stds)
         
         self.puddle_coef = puddle_coef
         self.puddle_depth = 0.0
@@ -150,7 +150,7 @@ if __name__ == '__main__':    ###changetopuddlerobot4
     world.append(Puddle((-0.5, -2), (2.5, 1), 0.1)) 
 
     ### ロボットを作る ###
-    a = PuddleIgnoreAgent(time_interval, 0.2, 10.0/180*math.pi, np.array([0, 0, 0]).T, m, goal) #地図を引数で渡す
+    a = PuddleIgnoreAgent(time_interval, np.array([0, 0, 0]).T, m, goal) #地図を引数で渡す
     r = Robot(np.array([0,0,0]).T, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0), 
               agent=a, color="red", bias_rate_stds=(0,0))
 
