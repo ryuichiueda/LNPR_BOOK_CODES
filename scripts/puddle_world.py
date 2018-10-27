@@ -124,7 +124,7 @@ class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
         super().draw(ax, elems)
         x, y, _ = self.kf.belief.mean
         elems.append(ax.text(x+1.0, y-0.5, "reward/sec:" + str(self.reward_per_sec()), fontsize=8))
-        elems.append(ax.text(x+1.0, y-1.0, "total reward:" + "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8))
+        elems.append(ax.text(x+1.0, y-1.0, "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8))
 
 
 # In[6]:
