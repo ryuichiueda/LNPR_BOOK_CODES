@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # In[1]:
@@ -60,7 +60,7 @@ class IdealRobot:
         self.r = 0.2  
         self.color = color 
         self.agent = agent
-        self.poses = []
+        self.poses = [pose]
         self.sensor = sensor    # 追加
         
     def vec_trans_to_world(self,vec):
@@ -82,7 +82,7 @@ class IdealRobot:
         self.poses.append(self.pose)
         elems += ax.plot([e[0] for e in self.poses], [e[1] for e in self.poses], linewidth=0.5, color="black")
         if self.sensor:
-            self.sensor.draw(ax, elems, self.pose)
+            self.sensor.draw(ax, elems, self.poses[-2])
         if self.agent:                               #以下2行追加   
             self.agent.draw(ax, elems)
          
