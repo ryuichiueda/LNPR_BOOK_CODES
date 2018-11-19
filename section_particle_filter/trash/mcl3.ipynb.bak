@@ -49,10 +49,10 @@
     "class MclAgent(Agent):  ###MclAgent3 (1,2,6,7行目を記載)\n",
     "    def __init__(self, nu, omega, particle_pose, particle_num=100): \n",
     "        super().__init__(nu, omega)\n",
-    "        self.pf = Mcl(particle_pose, particle_num)\n",
+    "        self.mcl = Mcl(particle_pose, particle_num)\n",
     "        \n",
     "    def draw(self, ax, elems):   #追加\n",
-    "        self.pf.draw(ax, elems)"
+    "        self.mcl.draw(ax, elems)"
    ]
   },
   {

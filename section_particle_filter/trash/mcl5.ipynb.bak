@@ -64,19 +64,19 @@
     "    def __init__(self, time_interval, nu, omega, particle_pose, particle_num=100,\\\n",
     "                motion_noise_stds={\"nn\":0.01, \"no\":0.02, \"on\":0.03, \"oo\":0.04}):\n",
     "        super().__init__(nu, omega)\n",
-    "        self.pf = Mcl(particle_pose, particle_num, motion_noise_stds)\n",
+    "        self.mcl = Mcl(particle_pose, particle_num, motion_noise_stds)\n",
     "        self.time_interval = time_interval\n",
     "        \n",
     "        self.prev_nu = 0.0       #追加\n",
     "        self.prev_omega = 0.0 #追加\n",
     "        \n",
     "    def decision(self, observation=None): #追加\n",
-    "        self.pf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)\n",
+    "        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)\n",
     "        self.prev_nu, self.prev_omega = self.nu, self.omega\n",
     "        return self.nu, self.omega\n",
     "        \n",
     "    def draw(self, ax, elems):\n",
-    "        self.pf.draw(ax, elems)"
+    "        self.mcl.draw(ax, elems)"
    ]
   },
   {

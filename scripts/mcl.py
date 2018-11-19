@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # In[1]:
@@ -94,21 +94,21 @@ class Mcl:  ###mlparticle（13〜17行目）
 class MclAgent(Agent): 
     def __init__(self, time_interval, nu, omega, particle_pose, envmap, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #2行目にenvmapを追加
         super().__init__(nu, omega)
-        self.mcl = Mcl(envmap, particle_pose, particle_num, motion_noise_stds) #envmapを追加
+        self.pf = Mcl(envmap, particle_pose, particle_num, motion_noise_stds) #envmapを追加
         self.time_interval = time_interval
         
         self.prev_nu = 0.0
         self.prev_omega = 0.0
         
     def decision(self, observation=None): 
-        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.pf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
         self.prev_nu, self.prev_omega = self.nu, self.omega
-        self.mcl.observation_update(observation)
+        self.pf.observation_update(observation)
         return self.nu, self.omega
         
     def draw(self, ax, elems):###mlwrite
-        self.mcl.draw(ax, elems)
-        x, y, t = self.mcl.ml_pose #以下追加
+        self.pf.draw(ax, elems)
+        x, y, t = self.pf.ml_pose #以下追加
         s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
         elems.append(ax.text(x, y+0.1, s, fontsize=8))
 
@@ -134,4 +134,10 @@ if __name__ == '__main__':
 
     world.draw()                       # アニメーションさせるとき
     #r.one_step(time_interval)  # アニメーションなしでデバッグするとき
+
+
+# In[ ]:
+
+
+
 

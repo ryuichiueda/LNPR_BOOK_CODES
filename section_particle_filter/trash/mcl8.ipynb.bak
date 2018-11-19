@@ -70,20 +70,20 @@
     "    def __init__(self, time_interval, nu, omega, particle_pose, particle_num=100,\\\n",
     "                motion_noise_stds={\"nn\":0.19, \"no\":0.001, \"on\":0.13, \"oo\":0.2}): \n",
     "        super().__init__(nu, omega)\n",
-    "        self.pf = Mcl(particle_pose, particle_num, motion_noise_stds)\n",
+    "        self.mcl = Mcl(particle_pose, particle_num, motion_noise_stds)\n",
     "        self.time_interval = time_interval\n",
     "        \n",
     "        self.prev_nu = 0.0\n",
     "        self.prev_omega = 0.0\n",
     "        \n",
     "    def decision(self, observation=None):  ###mcl_agent_obs\n",
-    "        self.pf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)\n",
+    "        self.mcl.motion_update(self.prev_nu, self.prev_omega, self.time_interval)\n",
     "        self.prev_nu, self.prev_omega = self.nu, self.omega\n",
-    "        self.pf.observation_update(observation)   #追加\n",
+    "        self.mcl.observation_update(observation)   #追加\n",
     "        return self.nu, self.omega\n",
     "        \n",
     "    def draw(self, ax, elems):\n",
-    "        self.pf.draw(ax, elems)"
+    "        self.mcl.draw(ax, elems)"
    ]
   },
   {
