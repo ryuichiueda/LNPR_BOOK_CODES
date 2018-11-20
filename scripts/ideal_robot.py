@@ -17,8 +17,9 @@ import numpy as np
 
 
 class World:
-    def __init__(self, time_span, time_interval):
+    def __init__(self, time_span, time_interval, debug=False):
         self.objects = []  
+        self.debug = debug
         self.time_span = time_span  
         self.time_interval = time_interval 
         
@@ -36,11 +37,13 @@ class World:
         
         elems = []
         
-        self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
+        if self.debug:        
+            for i in range(1000): self.one_step(i, elems, ax)
+        else:
+            self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
                                      frames=int(self.time_span/self.time_interval)+1,
                                      interval=int(self.time_interval*1000), repeat=False)
-
-        plt.show()
+            plt.show()
         
     def one_step(self, i, elems, ax):
         while elems: elems.pop().remove()
