@@ -9,6 +9,7 @@ sys.path.append('../scripts/')
 from robot import *
 from scipy.stats import multivariate_normal
 import random #追加
+import copy
 
 
 # In[2]:
@@ -54,18 +55,19 @@ class Mcl:  ###mlparticle（13〜17行目）
         c = np.diag([v["nn"]**2, v["no"]**2, v["on"]**2, v["oo"]**2])
         self.motion_noise_rate_pdf = multivariate_normal(cov=c)
         
-        self.ml_pose = self.particles[0].pose #追加
+        self.ml = self.particles[0] #追加
         
-    def set_ml_pose(self): #追加
+    def set_ml(self): #追加
         i = np.argmax([p.weight for p in self.particles])
-        self.ml_pose = self.particles[i].pose
+        self.ml = self.particles[i]
         
     def motion_update(self, nu, omega, time): 
         for p in self.particles: p.motion_update(nu, omega, time, self.motion_noise_rate_pdf)
             
     def observation_update(self, observation):  ###setmlpose
-        for p in self.particles: p.observation_update(observation, self.map,                                                       self.distance_dev_rate, self.direction_dev) 
-        self.set_ml_pose() #リサンプリング前に実行
+        for p in self.particles:
+            p.observation_update(observation, self.map, self.distance_dev_rate, self.direction_dev) 
+        self.set_ml() #リサンプリング前に実行
         self.resampling() 
             
     def resampling(self): 
@@ -78,7 +80,8 @@ class Mcl:  ###mlparticle（13〜17行目）
         ps = random.choices(self.particles, weights=ws, k=len(self.particles))  
         
         # 選んだリストからパーティクルを取り出し、重みを均一に
-        self.particles = [Particle(e.pose,1.0/len(self.particles)) for e in ps]          
+        self.particles = [copy.deepcopy(e) for e in ps]
+        for p in self.particles: p.weight = 1.0/len(self.particles)
         
     def draw(self, ax, elems):  
         xs = [p.pose[0] for p in self.particles]
@@ -108,7 +111,7 @@ class MclAgent(Agent):
         
     def draw(self, ax, elems):###mlwrite
         self.pf.draw(ax, elems)
-        x, y, t = self.pf.ml_pose #以下追加
+        x, y, t = self.pf.ml.pose #以下追加
         s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
         elems.append(ax.text(x, y+0.1, s, fontsize=8))
 

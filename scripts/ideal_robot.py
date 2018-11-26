@@ -38,11 +38,10 @@ class World:
         elems = []
         
         if self.debug:        
-            for i in range(1000): self.one_step(i, elems, ax)
+            for i in range(10): self.one_step(i, elems, ax)
         else:
             self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
-                                     frames=int(self.time_span/self.time_interval)+1,
-                                     interval=int(self.time_interval*1000), repeat=False)
+                                     frames=int(self.time_span/self.time_interval)+1, interval=int(self.time_interval*1000), repeat=False)
             plt.show()
         
     def one_step(self, i, elems, ax):
@@ -65,15 +64,6 @@ class IdealRobot:
         self.agent = agent
         self.poses = [pose]
         self.sensor = sensor    # 追加
-        
-    def vec_trans_to_world(self,vec):
-        s = math.sin(self.pose[2])  # self.pose[2]はロボットの向き
-        c = math.cos(self.pose[2])
-        return np.array([[c, -s], 
-                        [s, c]]).dot(vec) # 回転行列に引数のベクトルをかけて返す
-    
-    def pos_trans_to_world(self,pos):
-        return self.vec_trans_to_world(pos) + self.pose[0:2]
     
     def draw(self, ax, elems):         ### call_agent_draw
         x, y, theta = self.pose  
@@ -86,16 +76,9 @@ class IdealRobot:
         elems += ax.plot([e[0] for e in self.poses], [e[1] for e in self.poses], linewidth=0.5, color="black")
         if self.sensor:
             self.sensor.draw(ax, elems, self.poses[-2])
-        if self.agent:                               #以下2行追加   
+        if self.agent and hasattr(self.agent, "draw"):                               #以下2行追加   
             self.agent.draw(ax, elems)
          
-    def draw_coordinate_system(self, ax):   
-        origin = self.pos_trans_to_world(np.array([0, 0]).T) # ロボット座標系の原点を世界座標系へ
-        for v in [[1, 0], [0, 1]]:                           # それぞれロボット座標系のX,Y軸の単位ベクトル
-            wv = self.vec_trans_to_world(np.array(v).T)     # 世界座標系へ単位ベクトルを変換
-            ax.quiver(origin[0], origin[1], wv[0], wv[1],  # 矢印で単位ベクトルを描画
-                angles='xy', scale_units='xy', scale=1, color=self.color)
-            
     @classmethod           
     def state_transition(cls, nu, omega, time, pose):
         t0 = pose[2]
@@ -119,16 +102,13 @@ class IdealRobot:
 # In[4]:
 
 
-class Agent:                                     #### agent_draw
+class Agent: 
     def __init__(self, nu, omega):
         self.nu = nu
         self.omega = omega
         
     def decision(self, observation=None):
         return self.nu, self.omega
-    
-    def draw(self, ax, elems):   #このメソッドを追加
-        pass
 
 
 # In[5]:

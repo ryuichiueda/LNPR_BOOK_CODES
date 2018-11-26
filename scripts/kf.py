@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # In[1]:
@@ -12,6 +12,15 @@ from matplotlib.patches import Ellipse
 
 
 # In[2]:
+
+
+def three_sigma_ellipse(p, cov): 
+        eig_vals, eig_vec = np.linalg.eig(cov)
+        ang = math.atan2(eig_vec[:,0][1], eig_vec[:,0][0])/math.pi*180
+        return Ellipse(p, width=3*math.sqrt(eig_vals[0]),height=3*math.sqrt(eig_vals[1]), angle=ang, fill=False, color="blue", alpha=0.5)
+
+
+# In[3]:
 
 
 class KalmanFilter: ###kf4init
@@ -57,23 +66,20 @@ class KalmanFilter: ###kf4init
         t = self.belief.mean[2]
         A = time * np.array([[math.cos(t), 0.0], [math.sin(t), 0.0], [0.0, 1.0]])
         
-        G = np.diag([1.0, 1.0, 1.0])
+        F = np.diag([1.0, 1.0, 1.0])
         if abs(omega) < 10e-5:
-            G[0, 2] = - nu * time * math.sin(t)
-            G[1, 2] = nu * time * math.cos(t)
+            F[0, 2] = - nu * time * math.sin(t)
+            F[1, 2] = nu * time * math.cos(t)
         else:
-            G[0, 2] = nu / omega * (math.cos(t + omega * time) - math.cos(t))
-            G[1, 2] = nu / omega * (math.sin(t + omega * time) - math.sin(t))
+            F[0, 2] = nu / omega * (math.cos(t + omega * time) - math.cos(t))
+            F[1, 2] = nu / omega * (math.sin(t + omega * time) - math.sin(t))
             
-        self.belief.cov = G.dot(self.belief.cov).dot(G.T) + A.dot(M).dot(A.T)
+        self.belief.cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
         self.belief.mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
 
     def draw(self, ax, elems):
-        ###xy平面上での誤差楕円（3シグマ範囲）###
-        eig_vals, eig_vec = np.linalg.eig(self.belief.cov[0:2, 0:2])
-        ang = math.atan2(eig_vec[:,0][1], eig_vec[:,0][0])/math.pi*180
-        e = Ellipse(self.belief.mean[0:2], width=3*eig_vals[0],height=3*eig_vals[1],
-                       angle=ang, fill=False, color="blue", alpha=0.5)
+        ###xy平面上の誤差の3シグマ範囲###
+        e = three_sigma_ellipse(self.belief.mean[0:2], self.belief.cov[0:2, 0:2])
         elems.append(ax.add_patch(e))
 
         ###θ方向の誤差の3シグマ範囲###
@@ -84,7 +90,7 @@ class KalmanFilter: ###kf4init
         elems += ax.plot(xs, ys, color="blue", alpha=0.5)
 
 
-# In[3]:
+# In[4]:
 
 
 class KfAgent(Agent): 
@@ -106,7 +112,7 @@ class KfAgent(Agent):
         self.kf.draw(ax, elems)
 
 
-# In[4]:
+# In[5]:
 
 
 if __name__ == '__main__': 
