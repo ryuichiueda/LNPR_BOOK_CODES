@@ -14,10 +14,10 @@ from matplotlib.patches import Ellipse
 # In[2]:
 
 
-def three_sigma_ellipse(p, cov): 
-        eig_vals, eig_vec = np.linalg.eig(cov)
-        ang = math.atan2(eig_vec[:,0][1], eig_vec[:,0][0])/math.pi*180
-        return Ellipse(p, width=3*math.sqrt(eig_vals[0]),height=3*math.sqrt(eig_vals[1]), angle=ang, fill=False, color="blue", alpha=0.5)
+def sigma_ellipse(p, cov, n): 
+    eig_vals, eig_vec = np.linalg.eig(cov)
+    ang = math.atan2(eig_vec[:,0][1], eig_vec[:,0][0])/math.pi*180
+    return Ellipse(p, width=n*math.sqrt(eig_vals[0]),height=n*math.sqrt(eig_vals[1]), angle=ang, fill=False, color="blue", alpha=0.5)
 
 
 # In[3]:
@@ -79,7 +79,7 @@ class KalmanFilter: ###kf4init
 
     def draw(self, ax, elems):
         ###xy平面上の誤差の3シグマ範囲###
-        e = three_sigma_ellipse(self.belief.mean[0:2], self.belief.cov[0:2, 0:2])
+        e = sigma_ellipse(self.belief.mean[0:2], self.belief.cov[0:2, 0:2], 3)
         elems.append(ax.add_patch(e))
 
         ###θ方向の誤差の3シグマ範囲###
