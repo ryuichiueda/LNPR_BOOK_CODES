@@ -183,7 +183,7 @@ class IdealCamera:
     def draw(self, ax, elems, cam_pose): 
         for lm in self.lastdata:
             x, y, theta = cam_pose
-            distance, direction = lm[0]
+            distance, direction = lm[0][0], lm[0][1]
             lx = x + distance * math.cos(direction + theta)
             ly = y + distance * math.sin(direction + theta)
             elems += ax.plot([x,lx], [y,ly], color="pink")
