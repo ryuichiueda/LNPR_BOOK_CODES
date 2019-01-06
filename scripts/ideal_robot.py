@@ -38,7 +38,7 @@ class World:
         elems = []
         
         if self.debug:        
-            for i in range(10): self.one_step(i, elems, ax)
+            for i in range(int(self.time_span/self.time_interval)): self.one_step(i, elems, ax)
         else:
             self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
                                      frames=int(self.time_span/self.time_interval)+1, interval=int(self.time_interval*1000), repeat=False)
