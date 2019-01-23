@@ -45,7 +45,7 @@ class Particle:
 
 
 class Mcl:  ###mlparticle（13〜17行目）
-    def __init__(self, envmap, init_pose, num, motion_noise_stds,                  distance_dev_rate=0.14, direction_dev=0.05):
+    def __init__(self, envmap, init_pose, num, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2},                  distance_dev_rate=0.14, direction_dev=0.05):
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
         self.map = envmap
         self.distance_dev_rate = distance_dev_rate
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
-    pf = Mcl(m, initial_pose, 100, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2})
+    pf = Mcl(m, initial_pose, 100)
     circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
     r = Robot(initial_pose, sensor=Camera(m), agent=circling, color="red")
     world.append(r)

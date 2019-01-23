@@ -24,7 +24,7 @@ def sigma_ellipse(p, cov, n):
 
 
 class KalmanFilter: ###kf4init
-    def __init__(self, envmap, init_pose, motion_noise_stds, distance_dev_rate=0.14, direction_dev=0.05): #変数追加
+    def __init__(self, envmap, init_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2},                  distance_dev_rate=0.14, direction_dev=0.05): #変数追加
         self.belief = multivariate_normal(mean=init_pose,                                         cov=np.diag([1e-10, 1e-10, 1e-10])) 
         self.motion_noise_stds = motion_noise_stds
         self.map = envmap  #以下3行追加（Mclと同じ）
@@ -112,7 +112,7 @@ class KfAgent(Agent):
         self.kf.draw(ax, elems)
 
 
-# In[7]:
+# In[5]:
 
 
 if __name__ == '__main__': 
@@ -128,17 +128,17 @@ if __name__ == '__main__':
 
     ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
-    kf = KalmanFilter(m, initial_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2})
+    kf = KalmanFilter(m, initial_pose)
     circling = KfAgent(time_interval, 0.2, 10.0/180*math.pi, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=circling, color="red")
     world.append(r)
     
-    kf = KalmanFilter(m, initial_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2})
+    kf = KalmanFilter(m, initial_pose)
     linear = KfAgent(time_interval, 0.1, 0.0, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=linear, color="red")
     world.append(r)
     
-    kf = KalmanFilter(m, initial_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2})
+    kf = KalmanFilter(m, initial_pose)
     right = KfAgent(time_interval, 0.1, -3.0/180*math.pi, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=right, color="red")
     world.append(r)
