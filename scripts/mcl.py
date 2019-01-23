@@ -95,9 +95,9 @@ class Mcl:  ###mlparticle（13〜17行目）
 
 
 class MclAgent(Agent): 
-    def __init__(self, time_interval, nu, omega, particle_pose, envmap, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #2行目にenvmapを追加
+    def __init__(self, time_interval, nu, omega, pf):
         super().__init__(nu, omega)
-        self.pf = Mcl(envmap, particle_pose, particle_num, motion_noise_stds) #envmapを追加
+        self.pf = pf
         self.time_interval = time_interval
         
         self.prev_nu = 0.0
@@ -131,12 +131,13 @@ if __name__ == '__main__':
     world.append(m)          
 
     ### ロボットを作る ###
-    circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, np.array([0, 0, 0]).T, m, particle_num=100) #地図を引数で渡す
-    r = Robot(np.array([0,0,0]).T, sensor=Camera(m), agent=circling, color="red")
+    initial_pose = np.array([0, 0, 0]).T
+    pf = Mcl(m, initial_pose, 100, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2})
+    circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
+    r = Robot(initial_pose, sensor=Camera(m), agent=circling, color="red")
     world.append(r)
 
-    world.draw()                       # アニメーションさせるとき
-    #r.one_step(time_interval)  # アニメーションなしでデバッグするとき
+    world.draw()
 
 
 # In[ ]:
