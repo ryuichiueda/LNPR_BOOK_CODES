@@ -31,11 +31,11 @@ class Particle:
             obs_pos = d[0]
             obs_id = d[1]
             
-            ###パーティクルの位置と地図からランドマークの距離と方角を算出###
+            ##パーティクルの位置と地図からランドマークの距離と方角を算出##
             pos_on_map = envmap.landmarks[obs_id].pos
             particle_suggest_pos = IdealCamera.relative_polar_pos(self.pose, pos_on_map)
             
-            ###尤度の計算###
+            ##尤度の計算##
             distance_dev = distance_dev_rate*particle_suggest_pos[0]
             cov = np.diag(np.array([distance_dev**2, direction_dev**2]))
             self.weight *= multivariate_normal(mean=particle_suggest_pos, cov=cov).pdf(obs_pos)
@@ -44,7 +44,7 @@ class Particle:
 # In[3]:
 
 
-class Mcl:  ###mlparticle（13〜17行目）
+class Mcl:  
     def __init__(self, envmap, init_pose, num, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2},                  distance_dev_rate=0.14, direction_dev=0.05):
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
         self.map = envmap
@@ -64,23 +64,29 @@ class Mcl:  ###mlparticle（13〜17行目）
     def motion_update(self, nu, omega, time): 
         for p in self.particles: p.motion_update(nu, omega, time, self.motion_noise_rate_pdf)
             
-    def observation_update(self, observation):  ###setmlpose
+    def observation_update(self, observation): 
         for p in self.particles:
             p.observation_update(observation, self.map, self.distance_dev_rate, self.direction_dev) 
         self.set_ml() #リサンプリング前に実行
         self.resampling() 
             
-    def resampling(self): 
-        ws = [e.weight for e in self.particles]    # 重みのリストを作る
+    def resampling(self): ###systematicsampling
+        ws = np.cumsum([e.weight for e in self.particles]) #重みを累積して足していく（最後の要素が重みの合計になる）
+        if ws[-1] < 1e-100: ws = [e + 1e-100 for e in ws]  #重みの合計が0のときの処理
+            
+        step = ws[-1]/len(self.particles)   #正規化されていない場合はステップが「重みの合計値/N」になる
+        r = np.random.uniform(0.0, step)
+        cur_pos = 0
+        ps = []            #抽出するパーティクルのリスト
         
-        #重みの和がゼロに丸め込まれるとサンプリングできなくなるので小さな数を足しておく
-        if sum(ws) < 1e-100: ws = [e + 1e-100 for e in ws]
-        
-        # パーティクルのリストから、weightsのリストの重みに比例した確率で、num個選ぶ    
-        ps = random.choices(self.particles, weights=ws, k=len(self.particles))  
-        
-        # 選んだリストからパーティクルを取り出し、重みを均一に
-        self.particles = [copy.deepcopy(e) for e in ps]
+        while(len(ps) < len(self.particles)):
+            if r < ws[cur_pos]:
+                ps.append(self.particles[cur_pos])  #もしかしたらcur_posがはみ出るかもしれませんが例外処理は割愛で
+                r += step
+            else:
+                cur_pos += 1
+
+        self.particles = [copy.deepcopy(e) for e in ps]                   #以下の処理は前の実装と同じ
         for p in self.particles: p.weight = 1.0/len(self.particles)
         
     def draw(self, ax, elems):  
@@ -109,28 +115,28 @@ class MclAgent(Agent):
         self.pf.observation_update(observation)
         return self.nu, self.omega
         
-    def draw(self, ax, elems):###mlwrite
+    def draw(self, ax, elems):
         self.pf.draw(ax, elems)
         x, y, t = self.pf.ml.pose #以下追加
         s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
         elems.append(ax.text(x, y+0.1, s, fontsize=8))
 
 
-# In[5]:
+# In[7]:
 
 
 if __name__ == '__main__': 
     time_interval = 0.1
-    world = World(30, time_interval) 
+    world = World(30, time_interval, debug=False) 
 
-    ### 地図を生成して3つランドマークを追加 ###
+    ## 地図を生成して3つランドマークを追加 ##
     m = Map()                                  
     m.append_landmark(Landmark(-4,2))
     m.append_landmark(Landmark(2,-3))
     m.append_landmark(Landmark(3,3))
     world.append(m)          
 
-    ### ロボットを作る ###
+    ## ロボットを作る ##
     initial_pose = np.array([0, 0, 0]).T
     pf = Mcl(m, initial_pose, 100)
     circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
