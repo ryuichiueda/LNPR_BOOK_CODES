@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # In[1]:
@@ -52,8 +52,8 @@ class Puddle:
 
 
 class PuddleWorld(World):
-    def __init__(self, time_span, time_interval):
-        super().__init__(time_span, time_interval)
+    def __init__(self, time_span, time_interval, debug=False):
+        super().__init__(time_span, time_interval, debug)
         self.puddles = []
         self.robots = []
         self.goals = []
@@ -81,8 +81,8 @@ class PuddleWorld(World):
 
 
 class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
-    def __init__(self, time_interval, init_pose, envmap, goal, puddle_coef=100,                  motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #nu, omegaを除去。goal追加
-        super().__init__(time_interval, 0.0, 0.0, init_pose, envmap, motion_noise_stds)
+    def __init__(self, time_interval, kf, goal, puddle_coef=100): #nu, omegaを除去。goal追加
+        super().__init__(time_interval, 0.0, 0.0, kf)
         
         self.puddle_coef = puddle_coef
         self.puddle_depth = 0.0
@@ -132,7 +132,7 @@ class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
 
 if __name__ == '__main__':    ###changetopuddlerobot4
     time_interval = 0.1
-    world = PuddleWorld(40, time_interval) 
+    world = PuddleWorld(40, time_interval, debug=False) 
 
     m = Map()
     m.append_landmark(Landmark(-4,2))
@@ -150,12 +150,19 @@ if __name__ == '__main__':    ###changetopuddlerobot4
     world.append(Puddle((-0.5, -2), (2.5, 1), 0.1)) 
 
     ### ロボットを作る ###
-    a = PuddleIgnoreAgent(time_interval, np.array([0, 0, 0]).T, m, goal) #地図を引数で渡す
-    r = Robot(np.array([0,0,0]).T, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0), 
+    initial_pose = np.array([2, 2,0]).T
+    kf = KalmanFilter(m, initial_pose) #地図を引数で渡す
+    a = PuddleIgnoreAgent(time_interval, kf, goal) 
+    r = Robot(initial_pose, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0), 
               agent=a, color="red", bias_rate_stds=(0,0))
 
     world.append(r)
     
     world.draw()
-    #r.one_step(0.1)
+
+
+# In[ ]:
+
+
+
 

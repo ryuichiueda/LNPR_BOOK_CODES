@@ -44,7 +44,7 @@ class Particle:
 # In[3]:
 
 
-class Mcl:  
+class Mcl:    ###mlparticle（13〜17行目）
     def __init__(self, envmap, init_pose, num, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2},                  distance_dev_rate=0.14, direction_dev=0.05):
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
         self.map = envmap
@@ -54,12 +54,13 @@ class Mcl:
         v = motion_noise_stds
         c = np.diag([v["nn"]**2, v["no"]**2, v["on"]**2, v["oo"]**2])
         self.motion_noise_rate_pdf = multivariate_normal(cov=c)
-        
         self.ml = self.particles[0] #追加
+        self.pose = self.ml.pose #追加
         
     def set_ml(self): #追加
         i = np.argmax([p.weight for p in self.particles])
         self.ml = self.particles[i]
+        self.pose = self.ml.pose
         
     def motion_update(self, nu, omega, time): 
         for p in self.particles: p.motion_update(nu, omega, time, self.motion_noise_rate_pdf)
@@ -117,12 +118,12 @@ class MclAgent(Agent):
         
     def draw(self, ax, elems):
         self.pf.draw(ax, elems)
-        x, y, t = self.pf.ml.pose #以下追加
+        x, y, t = self.pf.pose #以下追加
         s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
         elems.append(ax.text(x, y+0.1, s, fontsize=8))
 
 
-# In[7]:
+# In[5]:
 
 
 if __name__ == '__main__': 

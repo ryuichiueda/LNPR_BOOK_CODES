@@ -81,14 +81,14 @@ class Robot(IdealRobot):
 # In[3]:
 
 
-class Camera(IdealCamera): ###noisesim_occulusion### 
+class Camera(IdealCamera): ###noisesim_occlusion### 
     def __init__(self, env_map,
                  distance_range=(0.5, 6.0),
                  direction_range=(-math.pi/3, math.pi/3),
                  distance_noise_rate=0.1, direction_noise=math.pi/90,
                  distance_bias_rate_stddev=0.1, direction_bias_stddev=math.pi/90,
                  phantom_prob=0.0, phantom_range_x=(-5.0,5.0), phantom_range_y=(-5.0,5.0),
-                 oversight_prob=0.1, occulusion_prob=0.0): #occulusion_prob追加
+                 oversight_prob=0.1, occlusion_prob=0.0): #occlusion_prob追加
         super().__init__(env_map, distance_range, direction_range)
         
         self.distance_noise_rate = distance_noise_rate
@@ -101,7 +101,7 @@ class Camera(IdealCamera): ###noisesim_occulusion###
         self.phantom_prob = phantom_prob
         
         self.oversight_prob = oversight_prob
-        self.occulusion_prob = occulusion_prob #追加
+        self.occlusion_prob = occlusion_prob #追加
         
     def noise(self, relpos):  
         ell = norm.rvs(loc=relpos[0], scale=relpos[0]*self.distance_noise_rate)
@@ -125,8 +125,8 @@ class Camera(IdealCamera): ###noisesim_occulusion###
         else:
             return relpos
         
-    def occulusion(self, relpos): #追加
-        if uniform.rvs() < self.occulusion_prob:
+    def occlusion(self, relpos): #追加
+        if uniform.rvs() < self.occlusion_prob:
             ell = relpos[0] + uniform.rvs()*(self.distance_range[1] - relpos[0])
             return np.array([ell, relpos[1]]).T   
         else:
@@ -137,7 +137,7 @@ class Camera(IdealCamera): ###noisesim_occulusion###
         for lm in self.map.landmarks:
             z = self.relative_polar_pos(cam_pose, lm.pos)
             z = self.phantom(cam_pose, z) 
-            z = self.occulusion(z) #追加
+            z = self.occlusion(z) #追加
             z = self.oversight(z)
             if self.visible(z):
                 z = self.bias(z)
@@ -148,7 +148,7 @@ class Camera(IdealCamera): ###noisesim_occulusion###
         return observed
 
 
-# In[ ]:
+# In[4]:
 
 
 if __name__ == '__main__': 
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
-    r = Robot( np.array([ 2, 2, math.pi/6]).T, sensor=Camera(m, occulusion_prob=0.1), agent=circling) 
+    r = Robot( np.array([ 2, 2, math.pi/6]).T, sensor=Camera(m, occlusion_prob=0.1), agent=circling) 
     world.append(r)
 
     ### アニメーション実行 ###
