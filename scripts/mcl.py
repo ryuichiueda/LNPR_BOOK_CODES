@@ -101,24 +101,24 @@ class Mcl:    ###mlparticle（13〜17行目）
 # In[4]:
 
 
-class MclAgent(Agent): 
-    def __init__(self, time_interval, nu, omega, pf):
+class EstimationAgent(Agent): 
+    def __init__(self, time_interval, nu, omega, estimator):
         super().__init__(nu, omega)
-        self.pf = pf
+        self.estimator = estimator
         self.time_interval = time_interval
         
         self.prev_nu = 0.0
         self.prev_omega = 0.0
         
     def decision(self, observation=None): 
-        self.pf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.estimator.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
         self.prev_nu, self.prev_omega = self.nu, self.omega
-        self.pf.observation_update(observation)
+        self.estimator.observation_update(observation)
         return self.nu, self.omega
         
     def draw(self, ax, elems):
-        self.pf.draw(ax, elems)
-        x, y, t = self.pf.pose #以下追加
+        self.estimator.draw(ax, elems)
+        x, y, t = self.estimator.pose #以下追加
         s = "({:.2f}, {:.2f}, {})".format(x,y,int(t*180/math.pi)%360)
         elems.append(ax.text(x, y+0.1, s, fontsize=8))
 
@@ -139,8 +139,8 @@ if __name__ == '__main__':
 
     ## ロボットを作る ##
     initial_pose = np.array([0, 0, 0]).T
-    pf = Mcl(m, initial_pose, 100)
-    circling = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
+    estimator = Mcl(m, initial_pose, 100)
+    circling = EstimationAgent(time_interval, 0.2, 10.0/180*math.pi, estimator)
     r = Robot(initial_pose, sensor=Camera(m), agent=circling, color="red")
     world.append(r)
 

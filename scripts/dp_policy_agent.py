@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[1]:
 
 
 import sys ###dppolicyagent
@@ -11,12 +11,12 @@ import itertools
 import collections
 
 
-# In[11]:
+# In[2]:
 
 
-class DpPolicyAgent(KfAgent):  ###dppolicyagent
-    def __init__(self, time_interval, kf, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
-        super().__init__(time_interval, 0.0, 0.0, kf) 
+class DpPolicyAgent(EstimationAgent):  ###dppolicyagent
+    def __init__(self, time_interval, estimator, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
+        super().__init__(time_interval, 0.0, 0.0, estimator) 
         
         ###座標関連の変数をDynamicProgrammingから持ってくる###
         self.pose_min = np.r_[lowerleft, 0] 
@@ -26,7 +26,6 @@ class DpPolicyAgent(KfAgent):  ###dppolicyagent
         
         self.policy_data = self.init_policy(self.index_nums)
         
-    @classmethod
     def init_policy(self, index_nums):
         tmp = np.zeros(np.r_[index_nums,2])
         for line in open("policy.txt", "r"):
@@ -35,7 +34,6 @@ class DpPolicyAgent(KfAgent):  ###dppolicyagent
             
         return tmp
     
-    @classmethod
     def to_index(self, pose, pose_min, index_nums , widths): #姿勢をインデックスに変えて正規化
         index = np.floor((pose - pose_min)/widths).astype(int)           #姿勢からインデックスに
         
@@ -50,15 +48,15 @@ class DpPolicyAgent(KfAgent):  ###dppolicyagent
         return self.policy_data[self.to_index(pose, self.pose_min, self.index_nums, self.widths)]
         
     def decision(self, observation=None):
-        self.kf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
-        self.kf.observation_update(observation)
+        self.estimator.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.estimator.observation_update(observation)
         
-        nu, omega = self.policy(self.kf.belief.mean)
+        nu, omega = self.policy(self.estimator.pose)
         self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
 
 
-# In[12]:
+# In[3]:
 
 
 if __name__ == '__main__':  ###dppolicyagentrun

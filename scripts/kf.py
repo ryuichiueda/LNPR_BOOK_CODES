@@ -6,7 +6,7 @@
 
 import sys
 sys.path.append('../scripts/')
-from robot import *
+from mcl import *
 from scipy.stats import multivariate_normal
 from matplotlib.patches import Ellipse
 
@@ -26,6 +26,7 @@ def sigma_ellipse(p, cov, n):
 class KalmanFilter: ###kf4init
     def __init__(self, envmap, init_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2},                  distance_dev_rate=0.14, direction_dev=0.05): #変数追加
         self.belief = multivariate_normal(mean=init_pose,                                         cov=np.diag([1e-10, 1e-10, 1e-10])) 
+        self.pose = self.belief.mean
         self.motion_noise_stds = motion_noise_stds
         self.map = envmap  #以下3行追加（Mclと同じ）
         self.distance_dev_rate = distance_dev_rate
@@ -54,6 +55,7 @@ class KalmanFilter: ###kf4init
             ###更新###
             self.belief.mean += K.dot(z - hmu)
             self.belief.cov = (np.eye(3) - K.dot(H)).dot(self.belief.cov)
+            self.pose = self.belief.mean
         
     def motion_update(self, nu, omega, time): #追加
         if abs(omega) < 1e-5: omega = 1e-5 #ゼロにすると式が変わるので避ける
@@ -93,28 +95,6 @@ class KalmanFilter: ###kf4init
 # In[4]:
 
 
-class KfAgent(Agent): 
-    def __init__(self, time_interval, nu, omega, kf):
-        super().__init__(nu, omega)
-        self.kf = kf
-        self.time_interval = time_interval
-        
-        self.prev_nu = 0.0
-        self.prev_omega = 0.0
-        
-    def decision(self, observation=None):  ###kfagent4
-        self.kf.motion_update(self.prev_nu, self.prev_omega, self.time_interval) 
-        self.prev_nu, self.prev_omega = self.nu, self.omega
-        self.kf.observation_update(observation)   #追加
-        return self.nu, self.omega
-        
-    def draw(self, ax, elems): #追加
-        self.kf.draw(ax, elems)
-
-
-# In[5]:
-
-
 if __name__ == '__main__': 
     time_interval = 0.1
     world = World(30, time_interval, debug=False) 
@@ -129,17 +109,17 @@ if __name__ == '__main__':
     ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
     kf = KalmanFilter(m, initial_pose)
-    circling = KfAgent(time_interval, 0.2, 10.0/180*math.pi, kf)
+    circling = EstimationAgent(time_interval, 0.2, 10.0/180*math.pi, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=circling, color="red")
     world.append(r)
     
     kf = KalmanFilter(m, initial_pose)
-    linear = KfAgent(time_interval, 0.1, 0.0, kf)
+    linear = EstimationAgent(time_interval, 0.1, 0.0, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=linear, color="red")
     world.append(r)
     
     kf = KalmanFilter(m, initial_pose)
-    right = KfAgent(time_interval, 0.1, -3.0/180*math.pi, kf)
+    right = EstimationAgent(time_interval, 0.1, -3.0/180*math.pi, kf)
     r = Robot(initial_pose, sensor=Camera(m), agent=right, color="red")
     world.append(r)
 

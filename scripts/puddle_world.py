@@ -6,7 +6,6 @@
 
 import sys 
 sys.path.append('../scripts/')
-from robot import *
 from kf import *
 
 
@@ -80,7 +79,7 @@ class PuddleWorld(World):
 # In[5]:
 
 
-class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
+class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
     def __init__(self, time_interval, kf, goal, puddle_coef=100): #nu, omegaを除去。goal追加
         super().__init__(time_interval, 0.0, 0.0, kf)
         
@@ -111,18 +110,18 @@ class PuddleIgnoreAgent(KfAgent): ###puddlerobot4（11行目まで）
         if self.in_goal:
             return 0.0, 0.0
         
-        self.kf.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
-        self.kf.observation_update(observation)
+        self.estimator.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
+        self.estimator.observation_update(observation)
         
         self.total_reward += self.time_interval*self.reward_per_sec()
         
-        nu, omega = self.policy(self.kf.belief.mean, self.goal)
+        nu, omega = self.policy(self.estimator.belief.mean, self.goal)
         self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
         
     def draw(self, ax, elems): 
         super().draw(ax, elems)
-        x, y, _ = self.kf.belief.mean
+        x, y, _ = self.estimator.pose
         elems.append(ax.text(x+1.0, y-0.5, "reward/sec:" + str(self.reward_per_sec()), fontsize=8))
         elems.append(ax.text(x+1.0, y-1.0, "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8))
 
