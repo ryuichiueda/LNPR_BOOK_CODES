@@ -67,29 +67,29 @@ class DynamicProgramming:
             
         return max_delta
     
-    def action_value(self, action, index): #はみ出しペナルティー追加
+    def action_value(self, action, index, out_penalty=True): 
         value = 0.0
         for delta, prob in self.state_transition_probs[(action, index[2])]: 
-            after, edge_reward = self.edge_correction(np.array(index).T + delta)
+            after, out_reward = self.out_correction(np.array(index).T + delta)
             after = tuple(after)
-            reward = - self.time_interval * self.depths[(after[0], after[1])] * self.puddle_coef - self.time_interval + edge_reward
+            reward = - self.time_interval * self.depths[(after[0], after[1])] * self.puddle_coef - self.time_interval + out_reward*out_penalty
             value += (self.value_function[after] + reward) * prob
 
         return value
             
-    def edge_correction(self, index): #変更
-        edge_reward = 0.0
+    def out_correction(self, index): #変更
+        out_reward = 0.0
         index[2] = (index[2] + self.index_nums[2])%self.index_nums[2] #方角の処理
         
         for i in range(2):
             if index[i] < 0:
                 index[i] = 0
-                edge_reward = -1e100
+                out_reward = -1e100
             elif index[i] >= self.index_nums[i]:
                 index[i] = self.index_nums[i]-1
-                edge_reward = -1e100
+                out_reward = -1e100
                 
-        return index, edge_reward
+        return index, out_reward
         
     def depth_means(self, puddles, sampling_num):
         ###セルの中の座標を均等にsampling_num**2点サンプリング###

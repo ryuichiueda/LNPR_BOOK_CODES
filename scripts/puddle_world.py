@@ -115,7 +115,7 @@ class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
         
         self.total_reward += self.time_interval*self.reward_per_sec()
         
-        nu, omega = self.policy(self.estimator.belief.mean, self.goal)
+        nu, omega = self.policy(self.estimator.pose, self.goal)
         self.prev_nu, self.prev_omega = nu, omega
         return nu, omega
         
@@ -126,7 +126,7 @@ class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
         elems.append(ax.text(x+1.0, y-1.0, "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8))
 
 
-# In[6]:
+# In[7]:
 
 
 if __name__ == '__main__':    ###changetopuddlerobot4

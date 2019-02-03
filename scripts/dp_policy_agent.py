@@ -14,9 +14,9 @@ import collections
 # In[2]:
 
 
-class DpPolicyAgent(EstimationAgent):  ###dppolicyagent
-    def __init__(self, time_interval, estimator, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
-        super().__init__(time_interval, 0.0, 0.0, estimator) 
+class DpPolicyAgent(PuddleIgnoreAgent):  ###dppolicyagent
+    def __init__(self, time_interval, estimator, goal, puddle_coef=100, widths=np.array([0.2, 0.2, math.pi/18]).T,                  lowerleft=np.array([-4, -4]).T, upperright=np.array([4, 4]).T): #widths以降はDynamicProgrammingから持ってくる
+        super().__init__(time_interval, estimator, goal, puddle_coef) 
         
         ###座標関連の変数をDynamicProgrammingから持ってくる###
         self.pose_min = np.r_[lowerleft, 0] 
@@ -44,16 +44,8 @@ class DpPolicyAgent(EstimationAgent):  ###dppolicyagent
                 
         return tuple(index) #ベクトルのままだとインデックスに使えないのでタプルに
     
-    def policy(self, pose): #姿勢から離散状態のインデックスを作って方策を参照して返すだけ                
+    def policy(self, pose, goal=None): #姿勢から離散状態のインデックスを作って方策を参照して返すだけ                
         return self.policy_data[self.to_index(pose, self.pose_min, self.index_nums, self.widths)]
-        
-    def decision(self, observation=None):
-        self.estimator.motion_update(self.prev_nu, self.prev_omega, self.time_interval)
-        self.estimator.observation_update(observation)
-        
-        nu, omega = self.policy(self.estimator.pose)
-        self.prev_nu, self.prev_omega = nu, omega
-        return nu, omega
 
 
 # In[3]:
@@ -61,7 +53,7 @@ class DpPolicyAgent(EstimationAgent):  ###dppolicyagent
 
 if __name__ == '__main__':  ###dppolicyagentrun
     time_interval = 0.1
-    world = PuddleWorld(30, time_interval) 
+    world = PuddleWorld(30, time_interval, debug=False) 
 
     m = Map()
     m.append_landmark(Landmark(-4,2))
@@ -84,7 +76,7 @@ if __name__ == '__main__':  ###dppolicyagentrun
         init_pose = np.array(p).T
     
         kf = KalmanFilter(m, init_pose)
-        a = DpPolicyAgent(time_interval, kf)
+        a = DpPolicyAgent(time_interval, kf, goal)
         r = Robot(init_pose, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0), 
               agent=a, color="red", bias_rate_stds=(0,0))
 

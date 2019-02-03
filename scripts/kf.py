@@ -78,6 +78,7 @@ class KalmanFilter: ###kf4init
             
         self.belief.cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
         self.belief.mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
+        self.pose = self.belief.mean
         
     def draw(self, ax, elems):
         ###xy平面上の誤差の3シグマ範囲###
