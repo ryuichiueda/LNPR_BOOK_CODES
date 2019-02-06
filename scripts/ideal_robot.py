@@ -161,7 +161,7 @@ class IdealCamera:
     def data(self, cam_pose):
         observed = []
         for lm in self.map.landmarks:
-            z = self.relative_polar_pos(cam_pose, lm.pos)
+            z = self.observation_function(cam_pose, lm.pos)
             if self.visible(z):               # 条件を追加
                 observed.append((z, lm.id))   # インデント
             
@@ -169,7 +169,7 @@ class IdealCamera:
         return observed
     
     @classmethod
-    def relative_polar_pos(cls, cam_pose, obj_pos):
+    def observation_function(cls, cam_pose, obj_pos):
         s = math.sin(cam_pose[2])
         c = math.cos(cam_pose[2])
         relative_pos = np.array([[c,  s],

@@ -45,7 +45,7 @@ class KalmanFilter: ###kf4init
             H = np.array([[(mux - mx)/sqrtq, (muy - my)/sqrtq, 0.0],  [(my - muy)/q, (mux - mx)/q, -1.0]])
             
             ###Qの計算###
-            hmu = IdealCamera.relative_polar_pos(self.belief.mean, self.map.landmarks[obs_id].pos)
+            hmu = IdealCamera.observation_function(self.belief.mean, self.map.landmarks[obs_id].pos)
             distance_dev = self.distance_dev_rate*hmu[0]
             Q = np.diag(np.array([distance_dev**2, self.direction_dev**2]))
             

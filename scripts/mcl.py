@@ -33,7 +33,7 @@ class Particle:
             
             ##パーティクルの位置と地図からランドマークの距離と方角を算出##
             pos_on_map = envmap.landmarks[obs_id].pos
-            particle_suggest_pos = IdealCamera.relative_polar_pos(self.pose, pos_on_map)
+            particle_suggest_pos = IdealCamera.observation_function(self.pose, pos_on_map)
             
             ##尤度の計算##
             distance_dev = distance_dev_rate*particle_suggest_pos[0]

@@ -115,7 +115,7 @@ class Camera(IdealCamera): ###noisesim_occlusion###
     def phantom(self, cam_pose, relpos):
         if uniform.rvs() < self.phantom_prob:
             pos = np.array(self.phantom_dist.rvs()).T
-            return self.relative_polar_pos(cam_pose, pos)
+            return self.observation_function(cam_pose, pos)
         else:
             return relpos
         
@@ -135,7 +135,7 @@ class Camera(IdealCamera): ###noisesim_occlusion###
     def data(self, cam_pose):
         observed = []
         for lm in self.map.landmarks:
-            z = self.relative_polar_pos(cam_pose, lm.pos)
+            z = self.observation_function(cam_pose, lm.pos)
             z = self.phantom(cam_pose, z) 
             z = self.occlusion(z) #追加
             z = self.oversight(z)
