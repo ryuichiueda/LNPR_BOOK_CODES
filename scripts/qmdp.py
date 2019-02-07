@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import sys
@@ -10,7 +10,7 @@ from dp_policy_agent import *
 from dynamic_programming import *
 
 
-# In[ ]:
+# In[2]:
 
 
 class QmdpAgent(DpPolicyAgent): ###qmdp3
@@ -32,13 +32,13 @@ class QmdpAgent(DpPolicyAgent): ###qmdp3
             
         return tmp
     
-    def qmdp(self, action, indexes):
+    def evaluation(self, action, indexes):
         return sum([self.dp.action_value(action, i, out_penalty=False) for i in indexes])/len(indexes)
         
-    def policy(self, pose, goal=None): #追加
+    def policy(self, pose, goal=None): #追加（引数poseは使わない）
         indexes = [self.to_index(p.pose, self.pose_min, self.index_nums, self.widths) for p in self.estimator.particles]
         self.current_value = sum([self.dp.value_function[i] for i in indexes])/len(indexes)
-        self.evaluations = [self.qmdp(a, indexes) for a in self.dp.actions]
+        self.evaluations = [self.evaluation(a, indexes) for a in self.dp.actions]
         self.history.append(self.dp.actions[np.argmax(self.evaluations)]) #ここから変更。historyにQ-MDPで選んだ行動を追記
         
         if self.history[-1][0] + self.history[-2][0] == 0.0 and self.history[-1][1] + self.history[-2][1] == 0.0: #2回の行動で停止していたら前進
@@ -51,7 +51,7 @@ class QmdpAgent(DpPolicyAgent): ###qmdp3
         elems.append(ax.text(-4.5, -4.6, "{:.3} => [{:.3}, {:.3}, {:.3}]".format(self.current_value, *self.evaluations), fontsize=8))
 
 
-# In[ ]:
+# In[3]:
 
 
 def trial(animation):
@@ -82,7 +82,7 @@ def trial(animation):
     return a
 
 
-# In[ ]:
+# In[4]:
 
 
 def evaluation():
@@ -94,8 +94,14 @@ def evaluation():
             f.flush()
 
 
+# In[5]:
+
+
+#trial(True)
+
+
 # In[ ]:
 
 
-#evaluation()
+
 
