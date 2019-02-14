@@ -36,7 +36,7 @@ def matF(nu, omega, time, theta):
     F[1, 2] = nu / omega * (math.sin(theta + omega * time) - math.sin(theta))
     return F
 
-def matH(z, pose, landmark_pos): ###kf4funcs
+def matH(pose, landmark_pos): ###kf4funcs
     mx, my = landmark_pos
     mux, muy, mut = pose
     q = (mux - mx)**2 + (muy - my)**2
@@ -63,7 +63,7 @@ class KalmanFilter: ###kf4init
             z = d[0]
             obs_id = d[1]
             
-            H = matH(z, self.belief.mean, self.map.landmarks[obs_id].pos)
+            H = matH(self.belief.mean, self.map.landmarks[obs_id].pos)
             estimated_z = IdealCamera.observation_function(self.belief.mean, self.map.landmarks[obs_id].pos)
             Q = matQ(estimated_z[0]*self.distance_dev_rate, self.direction_dev)
             K = self.belief.cov.dot(H.T).dot(np.linalg.inv(Q + H.dot(self.belief.cov).dot(H.T)))
