@@ -80,8 +80,8 @@ class PuddleWorld(World):
 
 
 class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
-    def __init__(self, time_interval, kf, goal, puddle_coef=100): #nu, omegaを除去。goal追加
-        super().__init__(time_interval, 0.0, 0.0, kf)
+    def __init__(self, time_interval, estimator, goal, puddle_coef=100): #nu, omegaを除去。goal追加
+        super().__init__(time_interval, 0.0, 0.0, estimator)
         
         self.puddle_coef = puddle_coef
         self.puddle_depth = 0.0
@@ -126,38 +126,37 @@ class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
         elems.append(ax.text(x+1.0, y-1.0, "eval: {:.1f}".format(self.total_reward+self.final_value), fontsize=8))
 
 
-# In[7]:
+# In[6]:
 
 
-if __name__ == '__main__':    ###changetopuddlerobot4
+def trial():  ###puddle_world4_trial
     time_interval = 0.1
-    world = PuddleWorld(40, time_interval, debug=False) 
+    world = World(30, time_interval, debug=False) 
 
+    ## 地図を生成して3つランドマークを追加 ##
     m = Map()
-    m.append_landmark(Landmark(-4,2))
-    m.append_landmark(Landmark(2,-3))
-    m.append_landmark(Landmark(4,4))     #後の強化学習の章のために位置を隅に変更
-    m.append_landmark(Landmark(-4,-4))  #本章ではロボットの姿勢をなるべく正確に求めたいのでランドマークを増やす
-    world.append(m)
-    
-    ###ゴールの追加###
-    goal = Goal(-3,-3)
+    for ln in [(-4,2), (2,-3), (4,4), (-4,-4)]: m.append_landmark(Landmark(*ln))
+    world.append(m)   
+
+    ##ゴールの追加##
+    goal = Goal(-3,-3)  #goalを変数に
     world.append(goal)
     
-    ###水たまりの追加###
+    ##水たまりの追加##
     world.append(Puddle((-2, 0), (0, 2), 0.1)) 
     world.append(Puddle((-0.5, -2), (2.5, 1), 0.1)) 
 
-    ### ロボットを作る ###
+   ##ロボットを作る##
     initial_pose = np.array([2, 2,0]).T
-    kf = KalmanFilter(m, initial_pose) #地図を引数で渡す
-    a = PuddleIgnoreAgent(time_interval, kf, goal) 
+    kf = KalmanFilter(m, initial_pose) 
+    a = PuddleIgnoreAgent(time_interval, kf, goal) #goalを渡す
     r = Robot(initial_pose, sensor=Camera(m, distance_bias_rate_stddev=0, direction_bias_stddev=0), 
               agent=a, color="red", bias_rate_stds=(0,0))
-
     world.append(r)
     
     world.draw()
+    
+#trial()
 
 
 # In[ ]:
