@@ -28,7 +28,7 @@ class World:
     
     def draw(self): 
         fig = plt.figure(figsize=(4,4))
-        ax = fig.add_subplot(111)          
+        ax = fig.add_subplot(111)
         ax.set_aspect('equal')             
         ax.set_xlim(-5,5)                  
         ax.set_ylim(-5,5) 
@@ -170,15 +170,11 @@ class IdealCamera:
     
     @classmethod
     def observation_function(cls, cam_pose, obj_pos):
-        s = math.sin(cam_pose[2])
-        c = math.cos(cam_pose[2])
-        relative_pos = np.array([[c,  s],
-                                 [-s, c]]).dot(obj_pos - cam_pose[0:2])
-        
-        distance = math.sqrt(relative_pos[0]**2 + relative_pos[1]**2)
-        direction = math.atan2(relative_pos[1], relative_pos[0])
-        
-        return np.array([distance, direction]).T
+        diff = obj_pos - cam_pose[0:2]
+        phi = math.atan2(diff[1], diff[0]) - cam_pose[2]
+        while phi >= np.pi: phi -= 2*np.pi
+        while phi < -np.pi: phi += 2*np.pi
+        return np.array( [np.hypot(*diff), phi ] ).T
     
     def draw(self, ax, elems, cam_pose): 
         for lm in self.lastdata:
