@@ -17,7 +17,7 @@ from matplotlib.patches import Ellipse
 def sigma_ellipse(p, cov, n):
     eig_vals, eig_vec = np.linalg.eig(cov)
     ang = math.atan2(eig_vec[:,0][1], eig_vec[:,0][0])/math.pi*180
-    return Ellipse(p, width=n*math.sqrt(eig_vals[0]),height=n*math.sqrt(eig_vals[1]), angle=ang, fill=False, color="blue", alpha=0.5)
+    return Ellipse(p, width=2*n*math.sqrt(eig_vals[0]),height=2*n*math.sqrt(eig_vals[1]), angle=ang, fill=False, color="blue", alpha=0.5)
 
 def matM(nu, omega, time, stds):
     return np.diag([stds["nn"]**2*abs(nu)/time + stds["no"]**2*abs(omega)/time, 
