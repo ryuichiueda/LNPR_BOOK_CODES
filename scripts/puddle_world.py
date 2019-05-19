@@ -131,7 +131,7 @@ class PuddleIgnoreAgent(EstimationAgent): ###puddlerobot4（11行目まで）
 
 def trial():  ###puddle_world4_trial
     time_interval = 0.1
-    world = World(30, time_interval, debug=False) 
+    world = PuddleWorld(30, time_interval, debug=False) 
 
     ## 地図を生成して3つランドマークを追加 ##
     m = Map()
