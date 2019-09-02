@@ -35,7 +35,7 @@ class Robot(IdealRobot):
         self.kidnap_dist = uniform(loc=(rx[0], ry[0], 0.0), scale=(rx[1]-rx[0], ry[1]-ry[0], 2*math.pi ))
         
     def noise(self, pose, nu, omega, time_interval):
-        self.distance_until_noise -= nu*time_interval + self.r*abs(omega)*time_interval
+        self.distance_until_noise -= abs(nu)*time_interval + self.r*abs(omega)*time_interval
         if self.distance_until_noise <= 0.0:
             self.distance_until_noise += self.noise_pdf.rvs()
             pose[2] += self.theta_noise.rvs()
