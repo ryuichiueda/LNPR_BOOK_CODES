@@ -78,7 +78,7 @@ def trial(animation): ###mclkidnap1test
     init_pose = np.array([np.random.uniform(-5.0, 5.0), np.random.uniform(-5.0, 5.0), np.random.uniform(-math.pi, math.pi)]).T
     robot_pose = np.array([np.random.uniform(-5.0, 5.0), np.random.uniform(-5.0, 5.0), np.random.uniform(-math.pi, math.pi)]).T
     pf = ResetMcl(m, init_pose, 100)
-    a = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
+    a = EstimatorAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
     r = Robot(robot_pose, sensor=Camera(m), agent=a, color="red")
     world.append(r)
 
@@ -104,7 +104,7 @@ def trial_phantom(animation): ###mclkidnap1test
     init_pose = np.array([np.random.uniform(-5.0, 5.0), np.random.uniform(-5.0, 5.0), np.random.uniform(-math.pi, math.pi)]).T
     robot_pose = np.array([0,0,0]).T #np.array([np.random.uniform(-5.0, 5.0), np.random.uniform(-5.0, 5.0), np.random.uniform(-math.pi, math.pi)]).T
     pf = ResetMcl(m, init_pose, 100)
-    a = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
+    a = EstimatorAgent(time_interval, 0.2, 10.0/180*math.pi, pf)
     r = Robot(robot_pose, sensor=Camera(m, phantom_prob=0.1), agent=a, color="red")
     world.append(r)
 

@@ -102,7 +102,7 @@ class Mcl:
 # In[4]:
 
 
-class MclAgent(Agent): 
+class EstimatorAgent(Agent): 
     def __init__(self, time_interval, nu, omega, particle_pose, envmap, particle_num=100,                 motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}): #2行目にenvmapを追加
         super().__init__(nu, omega)
         self.pf = Mcl(envmap, particle_pose, particle_num, motion_noise_stds) #envmapを追加
@@ -145,7 +145,7 @@ def trial(animation): ###mclglobal1test（下のTrialのところまで）
         np.random.uniform(-math.pi, math.pi)]
     ).T
         
-    a = MclAgent(time_interval, 0.2, 10.0/180*math.pi, None, m, particle_num=1000) #初期姿勢をNoneに
+    a = EstimatorAgent(time_interval, 0.2, 10.0/180*math.pi, None, m, particle_num=1000) #初期姿勢をNoneに
     r = Robot(init_pose, sensor=Camera(m), agent=a, color="red")
     world.append(r)
 

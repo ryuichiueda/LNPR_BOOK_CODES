@@ -72,7 +72,7 @@ if __name__ == '__main__':  ###kldmcl1exec
     ## ロボットを作る ##
     initial_pose = np.array([0, 0, 0]).T
     pf = KldMcl(m, initial_pose, 1000)#KldMclにする
-    a = MclAgent(time_interval, 0.2, 10.0/180*math.pi, pf) 
+    a = EstimatorAgent(time_interval, 0.2, 10.0/180*math.pi, pf) 
     r = Robot(initial_pose, sensor=Camera(m), agent=a, color="red")
     world.append(r)
 
