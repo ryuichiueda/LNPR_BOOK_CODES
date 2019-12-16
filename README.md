@@ -7,3 +7,9 @@
 
 * 完成したコードのみのリポジトリ: https://github.com/ryuichiueda/LNPR
 * 書籍で講義をするときのスライド: https://github.com/ryuichiueda/LNPR_SLIDES
+
+## 不具合等
+
+### 本書で指定の環境以外での情報
+
+* [JupyterLabでアニメーションが表示されない | hooked on mechatronics](https://hooked-on-mas.hatenablog.com/entry/2019/11/16/012422)
