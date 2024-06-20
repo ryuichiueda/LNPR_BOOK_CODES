@@ -59,17 +59,20 @@ class KalmanFilter: ###kf4init
         self.direction_dev = direction_dev
         
     def observation_update(self, observation):  #追加
+        mean, cov = self.belief.mean, self.belief.cov
         for d in observation:
             z = d[0]
             obs_id = d[1]
             
-            H = matH(self.belief.mean, self.map.landmarks[obs_id].pos)
-            estimated_z = IdealCamera.observation_function(self.belief.mean, self.map.landmarks[obs_id].pos)
+            H = matH(mean, self.map.landmarks[obs_id].pos)
+            estimated_z = IdealCamera.observation_function(mean, self.map.landmarks[obs_id].pos)
             Q = matQ(estimated_z[0]*self.distance_dev_rate, self.direction_dev)
-            K = self.belief.cov.dot(H.T).dot(np.linalg.inv(Q + H.dot(self.belief.cov).dot(H.T)))
-            self.belief.mean += K.dot(z - estimated_z)
-            self.belief.cov = (np.eye(3) - K.dot(H)).dot(self.belief.cov)
-            self.pose = self.belief.mean
+            K = cov.dot(H.T).dot(np.linalg.inv(Q + H.dot(cov).dot(H.T)))
+            mean += K.dot(z - estimated_z)
+            cov = (np.eye(3) - K.dot(H)).dot(cov)
+            
+        self.belief = multivariate_normal(mean=mean, cov=cov)
+        self.pose = self.belief.mean
         
     def motion_update(self, nu, omega, time): #追加
         if abs(omega) < 1e-5: omega = 1e-5 #値が0になるとゼロ割りになって計算ができないのでわずかに値を持たせる
@@ -77,8 +80,9 @@ class KalmanFilter: ###kf4init
         M = matM(nu, omega, time, self.motion_noise_stds)
         A = matA(nu, omega, time, self.belief.mean[2])
         F = matF(nu, omega, time, self.belief.mean[2])
-        self.belief.cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
-        self.belief.mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
+        cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
+        mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
+        self.belief = multivariate_normal(mean=mean, cov=cov)
         self.pose = self.belief.mean #他のクラスで使う
         
     def draw(self, ax, elems):
